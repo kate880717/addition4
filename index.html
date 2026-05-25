@@ -329,10 +329,10 @@ const FALLBACK_QUESTIONS = [
   // [도전] □식 (양팔 저울)
   {stage:'split-card',kind:'',a:28,b:0,target:42,meta:''},
   {stage:'split-card',kind:'',a:35,b:0,target:51,meta:''},
-  // [도전2] 합·차가 같은 식
-  {stage:'gather-many',kind:'',a:0,b:0,target:30,meta:''},
-  {stage:'gather-many',kind:'',a:0,b:0,target:50,meta:''},
-  {stage:'split-many',kind:'',a:0,b:0,target:40,meta:''},
+  // [도전2] 합·차가 같은 식 (1학년 범위로 — 분지 트리는 작은 수가 적합)
+  {stage:'gather-many',kind:'',a:0,b:0,target:15,meta:''},
+  {stage:'gather-many',kind:'',a:0,b:0,target:17,meta:''},
+  {stage:'split-many',kind:'',a:0,b:0,target:16,meta:''},
 ];
 
 const APP_STATE = {
@@ -990,6 +990,7 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 let CURRENT_INPUT='';
 let CURRENT_CHECK_FN=null;
 let KEYPAD_LOCKED=false;
+let CURRENT_ANSWER_DIGITS=1;
 
 function renderKeypad(){
   return `<div class="keypad" id="keypad">
@@ -1001,8 +1002,8 @@ function renderKeypad(){
 
 function keyPress(n){
   if(KEYPAD_LOCKED)return;
+  if(CURRENT_INPUT.length>=CURRENT_ANSWER_DIGITS)return;  // 답 자릿수까지만 받음
   CURRENT_INPUT+=n;
-  if(CURRENT_INPUT.length>2)CURRENT_INPUT=CURRENT_INPUT.slice(0,2);
   updateInputDisplay();
   playTone(800+n*30,0.05,'sine',0.2);
 }
@@ -1024,7 +1025,8 @@ function updateInputDisplay(){
     slot.classList.remove('empty','input-active');
     slot.classList.add('input-active','filled-input');
     slot.textContent=CURRENT_INPUT;
-    if(checkBtn)checkBtn.disabled=false;
+    // 답 자릿수와 같을 때만 check 활성화
+    if(checkBtn)checkBtn.disabled=(CURRENT_INPUT.length<CURRENT_ANSWER_DIGITS);
   }else{
     slot.classList.add('empty','input-active');
     slot.classList.remove('filled-input');
@@ -1035,6 +1037,7 @@ function updateInputDisplay(){
 function setupKeypadCheck(answer,motionFn){
   CURRENT_INPUT='';
   KEYPAD_LOCKED=false;
+  CURRENT_ANSWER_DIGITS=String(answer).length;
   updateInputDisplay();
   CURRENT_CHECK_FN=async(val)=>{
     if(KEYPAD_LOCKED)return;
@@ -1080,10 +1083,50 @@ const KO_NUMS=['','하나','둘','셋','넷','다섯','여섯','일곱','여덟'
 // ============================================
 // ✨ 카운팅 팝업 — 객체를 차례로 1,2,3,... 세고 빅 넘버 등장
 // ============================================
+// 자릿값 모형 HTML 생성 — 십 막대 + 일 큐브
+function placeValueHtml(count){
+  const tens=Math.floor(count/10), ones=count%10;
+  const tenBars=Array.from({length:tens},(_,i)=>`<div class="tv-ten-bar" style="display:grid;grid-template-columns:repeat(2,14px);grid-template-rows:repeat(5,14px);gap:2px;background:#1A4D80;padding:3px;border-radius:5px;box-shadow:0 2px 5px rgba(0,0,0,.25);animation:pv-pop .3s ${i*0.08}s both">${Array(10).fill('<div style="background:#A8C8F0;border-radius:2px"></div>').join('')}</div>`).join('');
+  const oneBlocks=Array.from({length:ones},(_,i)=>`<div style="width:20px;height:20px;background:#FF5252;border:2px solid #B81010;border-radius:4px;box-shadow:0 2px 4px rgba(0,0,0,.2);animation:pv-pop .3s ${(tens*0.08)+(i*0.06)}s both"></div>`).join('');
+  return `
+    <style>@keyframes pv-pop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}</style>
+    <div style="display:flex;gap:20px;align-items:center;justify-content:center;padding:18px 8px;flex-wrap:wrap">
+      ${tens>0?`<div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;max-width:420px">${tenBars}</div>
+        <div style="font-family:var(--font-display);font-size:20px;color:#1A4D80">십 ${tens}개</div>
+      </div>`:''}
+      ${tens>0 && ones>0?`<div style="font-family:var(--font-display);font-size:36px;color:#666">+</div>`:''}
+      ${ones>0?`<div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:180px">${oneBlocks}</div>
+        <div style="font-family:var(--font-display);font-size:20px;color:#B81010">일 ${ones}개</div>
+      </div>`:''}
+    </div>`;
+}
+
 async function showCountPopup(itemSvgFn,count,opts={}){
   return new Promise(resolve=>{
     const popup=document.createElement('div');
     popup.className='count-popup'+(opts.split?' split-pop':'');
+    const isLarge=count>20;
+    if(isLarge){
+      // 자릿값 시각화
+      popup.innerHTML=`
+        <div class="pop-title">${opts.title||'자릿값으로 볼까요?'}</div>
+        ${placeValueHtml(count)}
+        <div class="big-num show">${count}<span class="unit">이에요</span></div>`;
+      document.body.appendChild(popup);
+      (async()=>{
+        await sleep(500);
+        sfxCheer();
+        if(APP_STATE.speakerOn)await speak(`모두 ${count}이에요`,{rate:0.95});
+        await sleep(1500);
+        popup.style.transition='opacity .4s, transform .4s';
+        popup.style.opacity='0';popup.style.transform='translate(-50%,-50%) scale(.85)';
+        await sleep(420);popup.remove();resolve();
+      })();
+      return;
+    }
+    // 작은 수: 기존 별 카운팅
     popup.innerHTML=`
       <div class="pop-title">${opts.title||'하나씩 세어 볼까요?'}</div>
       <div class="pop-items">
@@ -1121,11 +1164,40 @@ async function showCountPopup(itemSvgFn,count,opts={}){
   });
 }
 
-// 양쪽 접시 카운팅 (가르기용)
+// 양쪽 접시 카운팅 (가르기용) — 큰 수 자릿값 분기
 async function showSplitCountPopup(itemSvgFn,leftCount,rightCount,total){
   return new Promise(resolve=>{
     const popup=document.createElement('div');
     popup.className='count-popup split-pop';
+    // 큰 수: 자릿값 시각화로 분리
+    if(total>20 || leftCount>20 || rightCount>20){
+      popup.innerHTML=`
+        <div class="pop-title">${total}을 ${leftCount}과 ${rightCount}으로 갈랐어요</div>
+        <div style="display:flex;gap:14px;align-items:flex-start;justify-content:center;flex-wrap:wrap;margin:6px 0">
+          <div style="background:#fff;border:3px solid var(--split-deep);border-radius:14px;padding:10px 14px">
+            <div style="font-family:var(--font-display);font-size:16px;color:#666;margin-bottom:4px;text-align:center">왼쪽 ${leftCount}</div>
+            ${placeValueHtml(leftCount)}
+          </div>
+          <div style="font-family:var(--font-display);font-size:36px;color:var(--split-deep);align-self:center">+</div>
+          <div style="background:#fff;border:3px solid var(--split-deep);border-radius:14px;padding:10px 14px">
+            <div style="font-family:var(--font-display);font-size:16px;color:#666;margin-bottom:4px;text-align:center">오른쪽 ${rightCount}</div>
+            ${placeValueHtml(rightCount)}
+          </div>
+        </div>
+        <div class="big-num show" style="margin-top:8px">${leftCount} + ${rightCount} = ${total}</div>`;
+      document.body.appendChild(popup);
+      (async()=>{
+        await sleep(500);
+        sfxCheer();
+        if(APP_STATE.speakerOn)await speak(`${leftCount} 더하기 ${rightCount}은 ${total}`,{rate:0.95});
+        await sleep(1800);
+        popup.style.transition='opacity .4s, transform .4s';
+        popup.style.opacity='0';popup.style.transform='translate(-50%,-50%) scale(.85)';
+        await sleep(420);popup.remove();resolve();
+      })();
+      return;
+    }
+    // 작은 수: 기존 양쪽 객체 카운팅
     popup.innerHTML=`
       <div class="pop-title">${total}을 ${leftCount}과 ${rightCount}으로 갈랐어요</div>
       <div class="two-plates">
@@ -1671,7 +1743,6 @@ async function flyCardToSlot(card,slot,val){
   ghost.style.fontSize=Math.round(slotRect.width*0.5)+'px';
   await sleep(620);
   ghost.remove();
-  card.classList.add('used');
   card.style.visibility='';
   slot.classList.remove('empty','active');
   slot.classList.add('filled');
@@ -1753,16 +1824,42 @@ function drawCardSum(root,q){
 // 분지 트리 — 여러 가지 모으기/가르기
 function drawBranchMany(root,q,mode){
   const target=q.target;
-  const pairs=[];for(let i=1;i<target;i++)pairs.push([i,target-i]);
-  const [a,b]=pairs[Math.floor(Math.random()*pairs.length)];
-  const leftVal=Math.random()<0.5?a:b;const rightVal=leftVal===a?b:a;
-  const optionsRaw=uniqueArr([leftVal,rightVal,a+1,b-1,target-1,1,2]).filter(x=>x>0&&x<=9);
-  const opts=shuffleArr(optionsRaw).slice(0,6);
+  // 옵션 카드 — 짝꿍 보장
+  let opts=[];
+  if(target<=10){
+    // 작은 수: 1~(target-1) 전부 — 모든 짝꿍 표현 가능
+    for(let i=1;i<target;i++)opts.push(i);
+  } else if(target<=18){
+    // 11~18: target-9 ~ 9 — 이 범위 안에서 모든 짝꿍 가능
+    for(let i=Math.max(1,target-9); i<=Math.min(target-1,9); i++)opts.push(i);
+    // 만약 5장 미만이면 추가 노이즈
+    while(opts.length<5){const n=Math.floor(Math.random()*9)+1; if(opts.indexOf(n)<0)opts.push(n);}
+  } else {
+    // 19+: 짝꿍 한두 쌍 보장 + 노이즈
+    const pairs=[];
+    for(let i=Math.max(1,target-18); i<=Math.floor(target/2); i++){
+      const j=target-i; if(j>0 && j<=18 && i<=18) pairs.push([i,j]);
+    }
+    // 짝꿍이 비어있으면 가장 작은 한 쌍 사용
+    if(pairs.length===0){
+      const half=Math.floor(target/2); pairs.push([half, target-half]);
+    }
+    const candidate=new Set();
+    // 최소 2개 짝꿍 보장
+    const picked=shuffleArr(pairs).slice(0, Math.min(2,pairs.length));
+    picked.forEach(p=>{candidate.add(p[0]);candidate.add(p[1]);});
+    // 노이즈: 짝꿍 옆 수
+    picked.forEach(p=>{candidate.add(p[0]+1);candidate.add(p[1]-1);});
+    opts=[...candidate].filter(x=>x>0 && x<target).slice(0,8);
+    // 너무 적으면 추가
+    while(opts.length<6){const n=Math.floor(Math.random()*(target-1))+1; if(opts.indexOf(n)<0)opts.push(n);}
+  }
+  opts=shuffleArr(opts);
   const isGather=mode==='gather';
   const svg=isGather
     ? `<svg class="tree-svg" viewBox="0 0 380 290" preserveAspectRatio="none"><path d="M60 100 L60 150 L320 150 L320 100" stroke="#FF6FA8" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M190 150 L190 220" stroke="#FF6FA8" stroke-width="6" fill="none" stroke-linecap="round"/><polygon points="190,250 175,225 205,225" fill="#FF6FA8"/></svg>`
     : `<svg class="tree-svg" viewBox="0 0 380 290" preserveAspectRatio="none"><path d="M190 70 L190 130 L60 130 L60 170" stroke="#FF6FA8" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M190 130 L320 130 L320 170" stroke="#FF6FA8" stroke-width="6" fill="none" stroke-linecap="round"/><polygon points="60,200 45,175 75,175" fill="#FF6FA8"/><polygon points="320,200 305,175 335,175" fill="#FF6FA8"/></svg>`;
-  const slotsRow=`<div class="row" ${!isGather?'style="margin-top:30px"':''}><div class="slot empty" data-correct="${leftVal}">?</div><div class="slot empty" data-correct="${rightVal}">?</div></div>`;
+  const slotsRow=`<div class="row" ${!isGather?'style="margin-top:30px"':''}><div class="slot empty">?</div><div class="slot empty">?</div></div>`;
   const targetRow=`<div class="row" ${isGather?'style="margin-top:30px"':''}><div class="anchor"${!isGather?' style="background:linear-gradient(180deg,#FFB1D2,#FF6FA8);color:#fff;border-color:#C73874"':''}>${target}</div></div>`;
   const treeRows=isGather?(slotsRow+targetRow):(targetRow+slotsRow);
   root.innerHTML=`
@@ -1786,37 +1883,73 @@ function bindBranchTree(root,target,isGather){
   function clearSlot(){if(selSlot)selSlot.classList.remove('active');selSlot=null;}
   async function tryPlace(){
     if(!selOpt||!selSlot||isPlacing)return;
-    const val=+selOpt.dataset.val;const correctVal=+selSlot.dataset.correct;
-    if(val===correctVal){
-      isPlacing=true;
-      const card=selOpt,slot=selSlot;
-      selOpt=null;selSlot=null;
-      await flyCardToSlot(card,slot,val);
-      sfxCorrect();
-      isPlacing=false;
-      if(root.querySelectorAll('.slot.empty').length===0){
-        // 모든 슬롯 채워짐 → 카운팅 시각화
-        const slots=[...root.querySelectorAll('.slot.filled')];
-        const vals=slots.map(s=>+s.textContent);
-        const leftVal=vals[0],rightVal=vals[1];
-        await sleep(300);
-        await showBranchCount(target,leftVal,rightVal,isGather);
+    const val=+selOpt.dataset.val;
+    isPlacing=true;
+    const card=selOpt,slot=selSlot;
+    selOpt=null;selSlot=null;
+    await flyCardToSlot(card,slot,val);
+    isPlacing=false;
+    const filledSlots=[...root.querySelectorAll('.slot.filled')];
+    const sp=root.querySelector('.speech');
+    if(filledSlots.length===1){
+      // 첫 카드 — 짝꿍 힌트
+      const needed=target-val;
+      if(needed<=0){
+        if(sp)sp.textContent=`${val}만으로는 ${target} 만들기 어려워. 더 작은 수로!`;
+        sfxWrong();
+        await sleep(1200);
+        slot.classList.remove('filled');slot.classList.add('empty');slot.textContent='?';
+        return;
+      }
+      if(sp)sp.textContent=`좋아! 짝꿍은 ${needed} 이야 — 이제 ${needed}를 골라 봐!`;
+      playTone(660,0.14,'sine',0.3);
+      if(APP_STATE.speakerOn)speak(`짝꿍은 ${needed}`,{rate:1.1});
+      // 짝꿍 카드 잠깐 반짝
+      const hintCard=[...root.querySelectorAll('.opt-card')].find(c=>+c.dataset.val===needed);
+      if(hintCard){
+        hintCard.style.transition='box-shadow .3s, transform .3s';
+        hintCard.style.boxShadow='0 0 24px rgba(255,230,0,.95)';
+        hintCard.style.transform='translateY(-4px) scale(1.05)';
+        setTimeout(()=>{hintCard.style.boxShadow='';hintCard.style.transform='';},1800);
+      }
+    } else if(filledSlots.length>=2){
+      // 두 카드 — 합 검증
+      const vals=filledSlots.map(s=>+s.textContent);
+      const sum=vals[0]+vals[1];
+      if(sum===target){
+        sfxCorrect();
+        await sleep(400);
+        await showBranchCount(target,vals[0],vals[1],isGather);
         recordCorrect();
         setTimeout(()=>{showFeedback(true);setTimeout(nextActivity,800);},200);
+      }else{
+        sfxWrong();
+        if(sp)sp.textContent=`${vals[0]}이랑 ${vals[1]}을 모으면 ${sum}이 돼. ${target}이 되도록 다시!`;
+        if(APP_STATE.speakerOn)speak(`다시 골라 봐`,{rate:1.1});
+        // 슬롯 흔들렸다가 부드럽게 비움
+        filledSlots.forEach(s=>s.classList.add('shake'));
+        await sleep(700);
+        filledSlots.forEach(s=>{
+          s.style.transition='opacity .35s, transform .35s';
+          s.style.opacity='0';s.style.transform='scale(.4)';
+        });
+        await sleep(380);
+        filledSlots.forEach(s=>{
+          s.classList.remove('filled','shake');s.classList.add('empty');
+          s.textContent='?';s.style.opacity='';s.style.transform='';
+        });
       }
-    }else{
-      selSlot.classList.add('shake');
-      const s=selSlot,o=selOpt;
-      setTimeout(()=>{s.classList.remove('shake','active');o.classList.remove('active');},500);
-      selSlot=null;selOpt=null;sfxWrong();
-      const sp=root.querySelector('.speech');if(sp)sp.textContent='아쉬워! 다른 수를 골라 보자';
     }
   }
   root.querySelectorAll('.opt-card').forEach(card=>{
-    card.addEventListener('click',()=>{if(card.classList.contains('used')||isPlacing)return;clearOpt();selOpt=card;card.classList.add('active');tryPlace();});
+    card.addEventListener('click',()=>{if(isPlacing)return;clearOpt();selOpt=card;card.classList.add('active');tryPlace();});
   });
-  root.querySelectorAll('.slot.empty').forEach(slot=>{
-    slot.addEventListener('click',()=>{if(isPlacing)return;clearSlot();selSlot=slot;slot.classList.add('active');tryPlace();});
+  // 모든 슬롯에 항상 클릭 이벤트 (empty/filled 체크는 안에서)
+  root.querySelectorAll('.slot').forEach(slot=>{
+    slot.addEventListener('click',()=>{
+      if(isPlacing||slot.classList.contains('filled'))return;
+      clearSlot();selSlot=slot;slot.classList.add('active');tryPlace();
+    });
   });
 }
 
