@@ -276,6 +276,23 @@ body{background:linear-gradient(180deg,#FFF8DD,#FFE9A8);color:#333}
 .dash-card .label{font-family:var(--font-display);font-size:14px;color:#666}
 .cert-buttons{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
 .hidden{display:none !important}
+
+/* 선잇기 카드 */
+.conn-card{width:80px;height:64px;background:#fff;border:3px solid var(--gather-deep);border-radius:14px;font-family:var(--font-display);font-size:32px;color:var(--gather-deep);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 6px rgba(0,0,0,.1);transition:all .2s;font-weight:bold}
+.conn-card:hover{transform:translateY(-2px) scale(1.04)}
+.conn-card.sel{background:#FFE066;border-color:#E8B100;box-shadow:0 0 18px rgba(255,193,60,.7);transform:scale(1.08)}
+.conn-card.matched{cursor:default;opacity:.85;transform:none}
+.conn-card.matched:hover{transform:none}
+/* 식 고르기 카드 — 인라인 스타일과 일관 */
+.eq-card.selected{transform:translateY(-3px) scale(1.03)}
+
+
+/* 수학 용어 강조 — 색깔별 가독성 */
+.answer-box .t-num,.intro-content .t-num,.activity .t-num{color:#1565C0;background:rgba(25,118,210,.13);padding:2px 9px;border-radius:8px;font-weight:bold;display:inline-block;margin:0 2px}
+.answer-box .t-op,.intro-content .t-op,.activity .t-op{color:#C62828;background:rgba(198,40,40,.13);padding:2px 9px;border-radius:8px;font-weight:bold;display:inline-block;margin:0 2px}
+.answer-box .t-rel,.intro-content .t-rel,.activity .t-rel{color:#2E7D32;background:rgba(46,125,50,.13);padding:2px 9px;border-radius:8px;font-weight:bold;display:inline-block;margin:0 2px}
+.answer-box{line-height:2.2 !important}
+
 </style>
 </head>
 <body>
@@ -306,35 +323,43 @@ const FALLBACK_STUDENTS = [
   {no:3,name:'박자릿',clazz:'1-1'},{no:4,name:'최세로',clazz:'1-1'},{no:5,name:'한더하',clazz:'1-1'}
 ];
 const FALLBACK_QUESTIONS = [
-  // [도입] 받아올림 없는 두 자리 + 한 자리
+  // [1] 받아올림 없는 두 자리 (도입)
   {stage:'gather-card',kind:'',a:23,b:4,target:27,meta:''},
-  {stage:'gather-card',kind:'',a:35,b:2,target:37,meta:''},
-  // [핵심1] 받아올림 없는 두 자리 + 두 자리
   {stage:'gather-card',kind:'',a:23,b:14,target:37,meta:''},
   {stage:'gather-card',kind:'',a:35,b:22,target:57,meta:''},
-  {stage:'gather-card',kind:'',a:42,b:35,target:77,meta:''},
-  // [핵심2] 받아올림 있는 두 자리 + 한 자리
-  {stage:'gather-card',kind:'',a:28,b:5,target:33,meta:''},
-  {stage:'gather-card',kind:'',a:37,b:8,target:45,meta:''},
-  // [핵심3] 받아올림 있는 두 자리 + 두 자리
-  {stage:'gather-card',kind:'',a:28,b:15,target:43,meta:''},
-  {stage:'gather-card',kind:'',a:37,b:24,target:61,meta:''},
-  // [핵심4] 받아내림 없는 두 자리 - 한/두 자리
-  {stage:'split-card',kind:'',a:5,b:0,target:27,meta:''},
-  {stage:'split-card',kind:'',a:23,b:0,target:47,meta:''},
-  // [핵심5] 받아내림 있는 두 자리 - 한 자리
-  {stage:'split-card',kind:'',a:5,b:0,target:32,meta:''},
-  {stage:'split-card',kind:'',a:7,b:0,target:43,meta:''},
-  // [핵심6] 받아내림 있는 두 자리 - 두 자리
-  {stage:'split-card',kind:'',a:28,b:0,target:53,meta:''},
-  {stage:'split-card',kind:'',a:37,b:0,target:64,meta:''},
-  // [도전] □식 (양팔 저울)
-  {stage:'split-card',kind:'',a:28,b:0,target:42,meta:''},
-  {stage:'split-card',kind:'',a:35,b:0,target:51,meta:''},
-  // [도전2] 합·차가 같은 식 (1학년 범위로 — 분지 트리는 작은 수가 적합)
+  // [2] ★ 세로셈 무대 — 받아올림 없는
+  {stage:'vertical-add',kind:'',a:23,b:14,target:37,meta:''},
+  {stage:'vertical-add',kind:'',a:42,b:35,target:77,meta:''},
+  // [3] ★ 세로셈 무대 — 받아올림 있는
+  {stage:'vertical-add',kind:'',a:28,b:5,target:33,meta:''},
+  {stage:'vertical-add',kind:'',a:37,b:8,target:45,meta:''},
+  {stage:'vertical-add',kind:'',a:28,b:15,target:43,meta:''},
+  {stage:'vertical-add',kind:'',a:37,b:24,target:61,meta:''},
+  // [4] ★ 세로셈 무대 — 받아내림 없는
+  {stage:'vertical-sub',kind:'',a:5,b:0,target:27,meta:''},
+  {stage:'vertical-sub',kind:'',a:23,b:0,target:47,meta:''},
+  // [5] ★ 세로셈 무대 — 받아내림 있는
+  {stage:'vertical-sub',kind:'',a:5,b:0,target:32,meta:''},
+  {stage:'vertical-sub',kind:'',a:7,b:0,target:43,meta:''},
+  {stage:'vertical-sub',kind:'',a:28,b:0,target:53,meta:''},
+  // [6] □식 — 두 자리 보수 (양팔 저울)
+  {stage:'gather-find-pair',kind:'',a:28,b:0,target:42,meta:''},
+  {stage:'gather-find-pair',kind:'',a:35,b:0,target:51,meta:''},
+  // [7-A] 작은 수 짝꿍 한 수 찾기 (분지 트리 준비 — 충분히)
+  {stage:'gather-find-pair',kind:'',a:7,b:0,target:15,meta:''},
+  {stage:'gather-find-pair',kind:'',a:9,b:0,target:15,meta:''},
+  {stage:'gather-find-pair',kind:'',a:8,b:0,target:17,meta:''},
+  {stage:'gather-find-pair',kind:'',a:9,b:0,target:17,meta:''},
+  {stage:'split-find-pair',kind:'',a:7,b:0,target:16,meta:''},
+  {stage:'split-find-pair',kind:'',a:8,b:0,target:16,meta:''},
+  // [7-B] 분지 트리 (두 수 모두 — 짝꿍 충분히 익힌 후)
   {stage:'gather-many',kind:'',a:0,b:0,target:15,meta:''},
-  {stage:'gather-many',kind:'',a:0,b:0,target:17,meta:''},
   {stage:'split-many',kind:'',a:0,b:0,target:16,meta:''},
+  // [8] ★ 식 고르기 — 합이 같은 식
+  {stage:'choose-equation',kind:'',a:0,b:0,target:15,meta:''},
+  {stage:'choose-equation',kind:'',a:0,b:0,target:17,meta:''},
+  // [9] 🚀 빠른 연산
+  {stage:'speed-round',kind:'',a:0,b:0,target:1,meta:''},
 ];
 
 const APP_STATE = {
@@ -365,7 +390,7 @@ function setupScale(){
 async function bootstrapData(){
   if(GAS_URL){
     try{
-      const r=await fetch(GAS_URL+'?action=bootstrap');
+      const r=await fetch(GAS_URL+'?action=bootstrap&app='+APP_PREFIX);
       const d=await r.json();
       if(d.ok){
         APP_STATE.students=d.students.length?d.students:FALLBACK_STUDENTS;
@@ -692,8 +717,8 @@ function renderInquiry(phase){
   const mount=document.getElementById('inquiry-mount');
   const isPre=phase==='pre';
   const cfg=isPre
-    ? {icon:'🤔',q:'왜 두 자리 덧뺄셈을 배울까요?',a:'우리 주변엔 두 자리 수가 많아요. 친구 수, 사탕 개수, 가격까지. 일의 자리는 일끼리, 십의 자리는 십끼리 더하고 빼는 규칙을 배우면 어떤 큰 수의 셈도 할 수 있어요. 일이와 십이가 도와줄게요! 🧮',next:'pre-record'}
-    : {icon:'💡',q:'활동을 마쳤어요! 새로 알게 된 게 뭘까요?',a:'자릿값이 다른 수는 같은 자리끼리 줄을 맞춰 더하고 빼요. 받아올림 1은 십의 자리로, 받아내림 10은 십의 자리에서 빌려와요. 덧셈과 뺄셈은 서로 짝이라 □식도 풀 수 있죠!',next:'post-record'};
+    ? {icon:'🤔',q:`왜 <span class='t-op'>두 자리 덧뺄셈</span>을 배울까요?`,a:`<span class='t-num'>일의 자리</span>는 일끼리, <span class='t-num'>십의 자리</span>는 십끼리! <span class='t-num'>자릿값</span>을 맞춰 셈하면 어떤 큰 수도 자신 있어요. 🧮`,next:'pre-record'}
+    : {icon:'💡',q:`활동을 마쳤어요! 새로 알게 된 게 뭘까요?`,a:`같은 <span class='t-num'>자리</span>끼리 줄 맞추기! <span class='t-op'>받아올림 1</span>은 <span class='t-num'>십의 자리</span>로, <span class='t-op'>받아내림 10</span>은 <span class='t-num'>일의 자리</span>로!`,next:'post-record'};
   mount.innerHTML=`
     <div class="inquiry-modal">
       <div class="inquiry-card">
@@ -707,7 +732,13 @@ function renderInquiry(phase){
       </div>
     </div>`;
   // 글자 단위 TTS 하이라이트 (스피커 ON일 때만)
-  setTimeout(()=>speakWithHighlight(cfg.a, document.getElementById('inquiry-a')),300);
+  setTimeout(()=>{
+    // HTML 태그(.t-num/.t-op/.t-rel 강조) 보존 — TTS는 평문으로
+    if(APP_STATE.speakerOn){
+      const plain=cfg.a.replace(/<[^>]+>/g,'');
+      speak(plain,{rate:0.95});
+    }
+  },300);
 }
 function closeInquiry(next){
   document.getElementById('inquiry-mount').innerHTML='';
@@ -911,6 +942,7 @@ async function finalizePost(){
   if(GAS_URL){
     try{
       const payload={
+        app:APP_PREFIX,
         name:APP_STATE.learnerName,clazz:APP_STATE.learnerClass,
         preText:APP_STATE.preRecord.text,preAudio:APP_STATE.preRecord.audioBase64||'',
         postText:APP_STATE.postRecord.text,postAudio:APP_STATE.postRecord.audioBase64||'',
@@ -935,6 +967,15 @@ function renderActivity(root){
     case 'gather-same': return drawGatherSimple(root,q,'같은 두 수를 모으면');
     case 'gather-mixed':return drawGatherSimple(root,q,'두 묶음을 모으면');
     case 'gather-card': return drawCardSum(root,q);
+    case 'gather-find-pair': return drawFindPair(root,q,'gather');
+    case 'split-find-pair':  return drawFindPair(root,q,'split');
+    case 'connect-pairs':    return drawConnectPairs(root,q);
+    case 'choose-equation':  return drawChooseEquation(root,q);
+    case 'tenframe-carry':   return drawTenFrameCarry(root,q);
+    case 'tenframe-borrow':  return drawTenFrameBorrow(root,q);
+    case 'vertical-add':     return drawVerticalAdd(root,q);
+    case 'vertical-sub':     return drawVerticalSub(root,q);
+    case 'speed-round':      return drawSpeedRound(root,q);
     case 'gather-many': return drawBranchMany(root,q,'gather');
     case 'split-equal': return drawSplitEqual(root,q);
     case 'split-card':  return drawSplitCard(root,q);
@@ -994,6 +1035,14 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 // ============================================
 // ⌨️ 키패드 — 직접 입력
 // ============================================
+// ============================================
+// 🔤 한국어 조사 자동 처리 (수 받침 기준)
+// ============================================
+function josaUn(n){const ld=n%10;return n===0||![2,4,5,9].includes(ld)?'은':'는';}
+function josaWa(n){const ld=n%10;return n===0||![2,4,5,9].includes(ld)?'과':'와';}
+function josaReul(n){const ld=n%10;return n===0||![2,4,5,9].includes(ld)?'을':'를';}
+function josaRo(n){const ld=n%10;return n===0||![2,4,5,9].includes(ld)?'으로':'로';}
+
 let CURRENT_INPUT='';
 let CURRENT_CHECK_FN=null;
 let KEYPAD_LOCKED=false;
@@ -1773,7 +1822,7 @@ function drawGatherSimple(root,q,inst){
   const svgFn=OBJECT_SVG[q.kind]||OBJECT_SVG.apple;
   root.innerHTML=`
     <div class="activity has-keypad">
-      <div class="instruction" id="instr-text">👉 모아서 <span class="emph">${q.target}</span> 만들기</div>
+      <div class="instruction" id="instr-text">👉 두 수를 <span class="t-op">모아서</span> <span class="t-num">${q.target}</span> 만들기</div>
       <div class="activity-canvas">
         <div class="objects-box">${objsRow(svgFn,q.a)}</div>
         <div style="font-family:var(--font-display);font-size:70px;color:var(--gather-deep)">+</div>
@@ -1810,7 +1859,7 @@ function drawCardSum(root,q){
   const ans=q.a+q.b;
   root.innerHTML=`
     <div class="activity has-keypad">
-      <div class="instruction" id="instr-text">👉 두 수를 모아서 <span class="emph">${q.target}</span> 만들기</div>
+      <div class="instruction" id="instr-text">👉 두 수를 <span class="t-op">모아서</span> <span class="t-num">${q.target}</span> 만들기</div>
       <div class="activity-canvas">
         <div class="num-tile">${q.a}</div>
         <div style="font-family:var(--font-display);font-size:70px;color:var(--gather-deep)">＋</div>
@@ -1829,6 +1878,800 @@ function drawCardSum(root,q){
 }
 
 // 분지 트리 — 여러 가지 모으기/가르기
+// ============================================
+// 🔍 새 활동: 짝꿍 한 수 찾기 (옵션 카드 중에서)
+// 한 수가 주어지고 나머지 한 수를 옵션 카드에서 고름
+// ============================================
+function drawFindPair(root,q,mode){
+  const target=q.target;
+  const a=q.a;
+  const ans=target-a;
+  // 옵션 카드 — 짝꿍 ans는 반드시 포함, 1~min(target-1, 9) 위주 + 노이즈
+  let opts=[];
+  if(target<=10){
+    for(let i=1;i<target;i++)opts.push(i);
+  } else if(target<=18){
+    for(let i=Math.max(1,target-9);i<=Math.min(target-1,9);i++)opts.push(i);
+  } else {
+    // 큰 수: 짝꿍 ans + 노이즈
+    opts=[ans, ans+1, ans-1, ans+2, Math.max(1,ans-2), 1, 2].filter(x=>x>0&&x<target);
+  }
+  if(opts.indexOf(ans)<0)opts.push(ans);
+  opts=shuffleArr(opts).slice(0,Math.min(opts.length,7));
+  if(opts.indexOf(ans)<0)opts[0]=ans;
+  opts=shuffleArr(opts);
+  const isGather=mode==='gather';
+  // 분지 트리 svg (모으기는 위→아래, 가르기는 아래→위)
+  const svg=isGather
+    ? `<svg class="tree-svg" viewBox="0 0 380 290" preserveAspectRatio="none"><path d="M60 100 L60 150 L320 150 L320 100" stroke="#FF6FA8" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M190 150 L190 220" stroke="#FF6FA8" stroke-width="6" fill="none" stroke-linecap="round"/><polygon points="190,250 175,225 205,225" fill="#FF6FA8"/></svg>`
+    : `<svg class="tree-svg" viewBox="0 0 380 290" preserveAspectRatio="none"><path d="M190 70 L190 130 L60 130 L60 170" stroke="#FF6FA8" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M190 130 L320 130 L320 170" stroke="#FF6FA8" stroke-width="6" fill="none" stroke-linecap="round"/><polygon points="60,200 45,175 75,175" fill="#FF6FA8"/><polygon points="320,200 305,175 335,175" fill="#FF6FA8"/></svg>`;
+  // 한 슬롯은 이미 채워짐, 한 슬롯은 비어있음 (위치 랜덤)
+  const leftFirst=Math.random()<0.5;
+  const filledSlot=`<div class="slot filled" data-fixed>${a}</div>`;
+  const emptySlot=`<div class="slot empty">?</div>`;
+  const slotsRow=`<div class="row" ${!isGather?'style="margin-top:30px"':''}>${leftFirst?filledSlot+emptySlot:emptySlot+filledSlot}</div>`;
+  const targetRow=`<div class="row" ${isGather?'style="margin-top:30px"':''}><div class="anchor"${!isGather?' style="background:linear-gradient(180deg,#FFB1D2,#FF6FA8);color:#fff;border-color:#C73874"':''}>${target}</div></div>`;
+  const treeRows=isGather?(slotsRow+targetRow):(targetRow+slotsRow);
+  root.innerHTML=`
+    <div class="activity">
+      <div class="instruction" id="instr-text">${isGather?`👉 <span class="t-num">${a}</span> <span class="t-op">+</span> <span class="t-rel">?</span> <span class="t-op">=</span> <span class="t-num">${target}</span>`:`👉 <span class="t-num">${target}</span> <span class="t-op">=</span> <span class="t-num">${a}</span> <span class="t-op">+</span> <span class="t-rel">?</span>`}</div>
+      <div class="activity-canvas" style="gap:60px">
+        <div class="branch-tree">${svg}${treeRows}</div>
+        <div class="option-panel">${opts.map(o=>`<div class="opt-card" data-val="${o}">${o}</div>`).join('')}</div>
+      </div>
+      <div class="tutorial-hint">👆 짝꿍 카드 → 빈칸 순서로 눌러요</div>
+      <div class="mascot-corner">${isGather?svgMoEum(110):svgNaNum(110)}</div>
+      <div class="speech">${a}${josaWa(a)} 모아서 ${target}? 짝꿍을 골라!</div>
+    </div>`;
+  speakWithHighlight(isGather?`${a}의 짝꿍 찾기`:`${target}을 ${a}과 무엇으로`,document.getElementById('instr-text'));
+  setTimeout(()=>{if(APP_STATE.speakerOn)speak(`${a}이랑 더해서 ${target}이 되는 짝꿍 카드를 골라 봐.`,{rate:1.0});},1700);
+  bindFindPair(root,target,a,ans,isGather);
+}
+
+function bindFindPair(root,target,a,ans,isGather){
+  let selOpt=null,selSlot=null,isPlacing=false;
+  function clearOpt(){if(selOpt)selOpt.classList.remove('active');selOpt=null;}
+  function clearSlot(){if(selSlot)selSlot.classList.remove('active');selSlot=null;}
+  async function tryPlace(){
+    if(!selOpt||!selSlot||isPlacing)return;
+    const val=+selOpt.dataset.val;
+    if(val===ans){
+      isPlacing=true;
+      const card=selOpt,slot=selSlot;
+      selOpt=null;selSlot=null;
+      await flyCardToSlot(card,slot,val);
+      sfxCorrect();
+      isPlacing=false;
+      await sleep(400);
+      await showBranchCount(target,isGather?a:ans,isGather?ans:a,isGather);
+      recordCorrect();
+      setTimeout(()=>{showFeedback(true);setTimeout(nextActivity,800);},200);
+    }else{
+      sfxWrong();
+      selSlot.classList.add('shake');
+      const sp=root.querySelector('.speech');
+      if(sp)sp.textContent=`${a}이랑 ${val}을 모으면 ${a+val}이 돼. ${target}이 되는 짝꿍은?`;
+      if(APP_STATE.speakerOn)speak(`다시 골라 봐`,{rate:1.1});
+      const s=selSlot,o=selOpt;
+      setTimeout(()=>{s.classList.remove('shake','active');o.classList.remove('active');},500);
+      selSlot=null;selOpt=null;
+    }
+  }
+  root.querySelectorAll('.opt-card').forEach(card=>{
+    card.addEventListener('click',()=>{
+      if(isPlacing)return;
+      clearOpt();selOpt=card;card.classList.add('active');
+      // 빈 슬롯이 하나뿐 — 자동 선택해서 바로 검증
+      const emptySlots=[...root.querySelectorAll('.slot.empty')].filter(s=>!s.classList.contains('filled'));
+      if(emptySlots.length===1&&!selSlot){
+        selSlot=emptySlots[0];
+        selSlot.classList.add('active');
+      }
+      tryPlace();
+    });
+  });
+  root.querySelectorAll('.slot').forEach(slot=>{
+    slot.addEventListener('click',()=>{
+      if(isPlacing||slot.classList.contains('filled')||slot.hasAttribute('data-fixed'))return;
+      clearSlot();selSlot=slot;slot.classList.add('active');tryPlace();
+    });
+  });
+}
+
+// ============================================
+// 🔗 선잇기 — 합이 target이 되는 두 수 짝짓기 (지도안 #10)
+// ============================================
+function drawConnectPairs(root,q){
+  const target=q.target;
+  // 짝꿍 후보 만들기
+  const pairs=[];
+  for(let i=1;i<target;i++){
+    if(i*2<=target&&i+i<=9&&target-i<=9){pairs.push([i,target-i]);}
+    else if(target-i>=1&&target-i<=9&&i<=9&&i<target-i){pairs.push([i,target-i]);}
+  }
+  // 짝 2~3쌍 선택
+  const shuffledP=shuffleArr(pairs);
+  const usedPairs=shuffledP.slice(0,Math.min(3,pairs.length));
+  let leftArr=usedPairs.map(p=>p[0]);
+  let rightArr=usedPairs.map(p=>p[1]);
+  // 노이즈 추가 (한쪽에 1개씩, 짝 없는 수)
+  const usedNums=new Set();
+  usedPairs.forEach(p=>{usedNums.add(p[0]);usedNums.add(p[1]);});
+  for(let i=1;i<=9;i++){
+    if(!usedNums.has(i)&&leftArr.length<4){leftArr.push(i);break;}
+  }
+  for(let i=1;i<=9;i++){
+    if(!usedNums.has(i)&&rightArr.length<4&&!leftArr.includes(i)){rightArr.push(i);break;}
+  }
+  leftArr=shuffleArr(leftArr);
+  rightArr=shuffleArr(rightArr);
+  // 색상 팔레트 — 짝 매칭 표시용
+  const colors=['#FFE066','#A8E0FF','#FFB1D2','#B0F0A0','#C4A8FF'];
+  root.innerHTML=`
+    <div class="activity gather">
+      <div class="instruction" id="instr-text">🔗 <span class="t-rel">합</span>이 <span class="t-num">${target}</span>인 두 수 짝짓기</div>
+      <div class="activity-canvas" style="gap:60px;align-items:center">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          ${leftArr.map((v,i)=>`<div class="conn-card" data-side="L" data-val="${v}" data-idx="${i}">${v}</div>`).join('')}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--font-display);font-size:28px;color:var(--gather-deep)">
+          <div style="font-size:48px">🤝</div>
+          <div>= ${target}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          ${rightArr.map((v,i)=>`<div class="conn-card" data-side="R" data-val="${v}" data-idx="${i}">${v}</div>`).join('')}
+        </div>
+      </div>
+      <div class="tutorial-hint">👆 왼쪽 카드 → 오른쪽 카드 — 짝꿍 ${usedPairs.length}쌍 모두 찾기!</div>
+      <div class="mascot-corner">${svgMoEum(110)}</div>
+      <div class="speech">합이 ${target}이 되는 두 수를 골라 봐!</div>
+    </div>`;
+  speakWithHighlight(`합이 ${target}이 되는 두 수 짝짓기`,document.getElementById('instr-text'));
+  bindConnectPairs(root,target,usedPairs.length,colors);
+}
+
+function bindConnectPairs(root,target,needed,colors){
+  let selLeft=null;
+  let matched=0;
+  function clearSel(){
+    root.querySelectorAll('.conn-card.sel').forEach(c=>c.classList.remove('sel'));
+    selLeft=null;
+  }
+  root.querySelectorAll('.conn-card[data-side="L"]').forEach(card=>{
+    card.addEventListener('click',()=>{
+      if(card.classList.contains('matched'))return;
+      clearSel();
+      selLeft=card;
+      card.classList.add('sel');
+    });
+  });
+  root.querySelectorAll('.conn-card[data-side="R"]').forEach(card=>{
+    card.addEventListener('click',async()=>{
+      if(card.classList.contains('matched')||!selLeft)return;
+      const lv=+selLeft.dataset.val,rv=+card.dataset.val;
+      if(lv+rv===target){
+        sfxCorrect();
+        const l=selLeft,r=card;
+        const color=colors[matched%colors.length];
+        l.style.background=color;
+        r.style.background=color;
+        l.style.borderColor=color;
+        r.style.borderColor=color;
+        l.classList.add('matched');
+        r.classList.add('matched');
+        l.classList.remove('sel');
+        matched++;
+        selLeft=null;
+        const sp=root.querySelector('.speech');
+        if(sp)sp.textContent=`${lv} + ${rv} = ${target} ✨ (${matched}/${needed}쌍)`;
+        if(matched>=needed){
+          await sleep(700);
+          sfxCheer();
+          recordCorrect();
+          showFeedback(true);
+          setTimeout(nextActivity,1000);
+        }
+      } else {
+        sfxWrong();
+        card.classList.add('shake');
+        const sp=root.querySelector('.speech');
+        if(sp)sp.textContent=`${lv} + ${rv} = ${lv+rv} (${target}이 아니야)`;
+        setTimeout(()=>{card.classList.remove('shake');selLeft.classList.remove('sel');selLeft=null;},600);
+      }
+    });
+  });
+}
+
+// ============================================
+// ✅ 식 고르기 — 합이 target인 식을 모두 고르기 (지도안 #11)
+// ============================================
+function drawChooseEquation(root,q){
+  const target=q.target;
+  // 합이 target인 식 — 모두 가능한 조합
+  const correctEqs=[];
+  for(let a=1;a<target;a++){
+    const b=target-a;
+    if(b>=1&&b<=9&&a<=9){correctEqs.push({a,b,sum:target});}
+  }
+  // 합이 다른 식 (오답)
+  const wrongEqs=[];
+  for(let a=1;a<=9;a++){
+    for(let b=1;b<=9;b++){
+      if(a+b!==target&&Math.abs(a+b-target)<=3){
+        wrongEqs.push({a,b,sum:a+b});
+      }
+    }
+  }
+  // 정답 3개 + 오답 5개 (또는 가능한 한)
+  const corrPick=shuffleArr(correctEqs).slice(0,Math.min(3,correctEqs.length));
+  const wrongPick=shuffleArr(wrongEqs).slice(0,Math.max(3,8-corrPick.length));
+  const all=shuffleArr([...corrPick,...wrongPick]);
+  root.innerHTML=`
+    <div class="activity gather">
+      <div class="instruction" id="instr-text">✅ <span class="t-rel">합</span>이 <span class="t-num">${target}</span>인 식 모두 고르기</div>
+      <div class="activity-canvas" style="flex-wrap:wrap;gap:14px;max-width:580px;justify-content:center">
+        ${all.map(e=>`<div class="eq-card" data-correct="${e.sum===target?'1':'0'}" style="background:#fff;border:3px solid var(--gather-deep);border-radius:14px;padding:14px 20px;font-family:var(--font-display);font-size:28px;color:var(--gather-deep);cursor:pointer;box-shadow:0 3px 6px rgba(0,0,0,.1);transition:all .2s">${e.a} + ${e.b}</div>`).join('')}
+      </div>
+      <button id="eq-check-btn" style="margin-top:14px;background:var(--gather-deep);color:#fff;font-family:var(--font-display);font-size:22px;padding:14px 38px;border:none;border-radius:18px;cursor:pointer;box-shadow:0 6px 0 var(--gather-shadow,#888);font-weight:bold">확인하기 ✓</button>
+      <div class="tutorial-hint">👆 합이 ${target}인 식 ${corrPick.length}개 — 모두 골라 ✓ 누르기</div>
+      <div class="mascot-corner">${svgMoEum(110)}</div>
+      <div class="speech">합이 ${target}인 식은 어떤 것?</div>
+    </div>`;
+  speakWithHighlight(`합이 ${target}인 식 모두 고르기`,document.getElementById('instr-text'));
+  bindChooseEquation(root,target,corrPick.length);
+}
+
+function bindChooseEquation(root,target,needed){
+  root.querySelectorAll('.eq-card').forEach(card=>{
+    card.addEventListener('click',()=>{
+      if(card.classList.contains('locked'))return;
+      const isSel=card.classList.toggle('selected');
+      if(isSel){
+        card.style.background='#FFE066';
+        card.style.transform='translateY(-3px) scale(1.03)';
+        card.style.boxShadow='0 6px 14px rgba(255,193,7,.4)';
+      } else {
+        card.style.background='#fff';
+        card.style.transform='';
+        card.style.boxShadow='0 3px 6px rgba(0,0,0,.1)';
+      }
+    });
+  });
+  document.getElementById('eq-check-btn').addEventListener('click',()=>{
+    const selected=[...root.querySelectorAll('.eq-card.selected')];
+    let correctSelections=0;
+    let wrongSelections=0;
+    selected.forEach(c=>{
+      if(c.dataset.correct==='1')correctSelections++;
+      else wrongSelections++;
+    });
+    const sp=root.querySelector('.speech');
+    if(correctSelections===needed&&wrongSelections===0){
+      // 모두 정답
+      sfxCheer();
+      recordCorrect();
+      selected.forEach(c=>{c.classList.add('locked');c.style.background='#B0F0A0';});
+      if(sp)sp.textContent=`정답! ${needed}개 모두 찾았어!`;
+      setTimeout(()=>{showFeedback(true);setTimeout(nextActivity,1000);},800);
+    } else {
+      sfxWrong();
+      if(sp)sp.textContent=`합이 ${target}인 식 ${needed}개를 정확히 골라야 해. 다시 살펴봐!`;
+      // 잘못 선택한 것 표시
+      selected.forEach(c=>{
+        if(c.dataset.correct!=='1'){
+          c.classList.add('shake');
+          c.style.background='#FFB4B4';
+          setTimeout(()=>{
+            c.classList.remove('selected','shake');
+            c.style.background='#fff';
+            c.style.transform='';
+            c.style.boxShadow='0 3px 6px rgba(0,0,0,.1)';
+          },1000);
+        }
+      });
+    }
+  });
+}
+
+// ============================================
+// 🟦 새 활동: 10판으로 받아올림 (a + b = 십몇)
+// 일 모형 10개 채워지면 → 십 모형 1개로 변신, 남은 일 모형 표시
+// ============================================
+function drawTenFrameCarry(root,q){
+  const a=q.a, b=q.b, total=a+b;
+  const headerBg=`linear-gradient(180deg,var(--gather-bg-1),var(--gather-bg-2))`;
+  // 10판 + 추가 일 모형 시각화 (a, a+1, ..., a+b 단계로 표시)
+  const cells = [];
+  for(let i=0;i<10;i++){
+    const filled = i<Math.min(a, 10);
+    cells.push(`<div class="tfc-cell" data-i="${i}" style="width:48px;height:48px;border:3px solid var(--gather-deep);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.1)">${filled?`<div style="width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 32% 32%,#fff 6%,var(--gather-accent) 70%);box-shadow:0 2px 4px rgba(0,0,0,.2)"></div>`:''}</div>`);
+  }
+  const extras = (a+b>10) ? Array.from({length:total-10},(_,i)=>`<div class="tfc-extra" data-i="${i}" style="width:48px;height:48px;border:3px dashed var(--gather-deep);border-radius:10px;background:#FFFDF0;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 32% 32%,#fff 6%,#FFD93C 70%);border:2px solid var(--gather-deep);box-shadow:0 2px 4px rgba(0,0,0,.2)"></div></div>`).join('') : '';
+  root.innerHTML=`
+    <div class="activity has-keypad" style="background:${headerBg}">
+      <div class="instruction" id="instr-text">👉 <span class="t-num">${a}</span> <span class="t-op">+</span> <span class="t-num">${b}</span> — <span class="t-op">받아올림</span>!</div>
+      <div class="activity-canvas" style="flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center">
+          <div style="display:grid;grid-template-columns:repeat(5,48px);gap:6px;padding:10px;background:rgba(255,255,255,.7);border:3px solid var(--gather-deep);border-radius:14px">${cells.join('')}</div>
+          ${extras?`<div style="font-family:var(--font-display);font-size:38px;color:var(--gather-deep)">+</div><div style="display:flex;gap:6px;padding:10px;background:rgba(255,255,255,.5);border:3px dashed var(--gather-deep);border-radius:14px">${extras}</div>`:''}
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:4px">
+          <div class="num-tile">${a}</div>
+          <div style="font-family:var(--font-display);font-size:50px;color:var(--gather-deep)">＋</div>
+          <div class="num-tile">${b}</div>
+          <div style="font-family:var(--font-display);font-size:50px;color:var(--gather-deep)">＝</div>
+          <div class="num-tile target empty input-active" id="answer-slot"><span class="cursor-blink"></span></div>
+        </div>
+      </div>
+      <div class="tutorial-hint">👇 10판 + 남은 동그라미를 모두 세어서 입력!</div>
+      <div class="mascot-corner">${svgMoEum(110)}</div>
+      <div class="speech">10판 가득 채우면 십 1개! 남은 동그라미가 일의 자리야</div>
+    </div>
+    ${renderKeypad()}
+  `;
+  speakWithHighlight(`${a} 더하기 ${b}`,document.getElementById('instr-text'));
+  setupKeypadCheck(total,()=>motionTenFrameCarry(root,a,b,total));
+}
+
+async function motionTenFrameCarry(root,a,b,total){
+  // 모션: 10판 가득 채워지면 반짝 → 십 모형 변신 + 남은 일 표시
+  const arena=document.createElement('div');
+  arena.className='count-popup';
+  arena.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.3);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:200;background:#fff;border:5px solid var(--gather-deep);border-radius:24px;padding:24px 28px;box-shadow:0 14px 30px rgba(0,0,0,.3);max-width:560px';
+  const tens=Math.floor(total/10), ones=total%10;
+  arena.innerHTML=`
+    <div style="font-family:var(--font-display);font-size:26px;color:var(--gather-deep);text-align:center;margin-bottom:10px">🌟 10판 가득! 받아올림 ${tens}!</div>
+    <div style="display:flex;align-items:center;gap:18px;justify-content:center;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="display:grid;grid-template-columns:repeat(2,18px);grid-template-rows:repeat(5,18px);gap:2px;background:var(--gather-deep);padding:4px;border-radius:6px;box-shadow:0 0 18px rgba(255,230,0,.7)">${Array(10).fill('<div style="background:#FFE066;border-radius:3px"></div>').join('')}</div>
+        <div style="font-family:var(--font-display);font-size:20px;color:var(--gather-deep)">십 ${tens}개</div>
+      </div>
+      ${ones>0?`<div style="font-family:var(--font-display);font-size:38px;color:#666">+</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;max-width:180px">${Array.from({length:ones},()=>`<div style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 32% 32%,#fff 6%,var(--gather-accent) 70%);box-shadow:0 2px 4px rgba(0,0,0,.25)"></div>`).join('')}</div>
+        <div style="font-family:var(--font-display);font-size:20px;color:var(--gather-deep)">일 ${ones}개</div>
+      </div>`:''}
+    </div>
+    <div style="font-family:var(--font-display);font-size:38px;color:#222;text-align:center;margin-top:14px">${a} + ${b} = <span style="color:var(--gather-deep);font-size:48px">${total}</span></div>
+  `;
+  root.appendChild(arena);
+  await sleep(50);
+  arena.style.opacity='1';
+  arena.style.transform='translate(-50%,-50%) scale(1)';
+  sfxCheer();
+  if(APP_STATE.speakerOn)speak(`${a} 더하기 ${b}은 ${total}`,{rate:.95});
+  await sleep(2000);
+  arena.style.opacity='0';
+  arena.style.transform='translate(-50%,-50%) scale(.3)';
+  await sleep(400);
+  arena.remove();
+}
+
+// ============================================
+// 🟧 새 활동: 10판으로 받아내림 (십몇 - 몇 = 몇)
+// 10판 + 일 모형 → 일 부족하면 십 모형 1개 풀어서 일 10개로 + 빼고 남기
+// ============================================
+function drawTenFrameBorrow(root,q){
+  const total=q.target, b=q.a, ans=total-b;  // total - b = ans
+  const headerBg=`linear-gradient(180deg,var(--split-bg-1),var(--split-bg-2))`;
+  const initOnes = total%10;
+  const initTens = Math.floor(total/10);
+  // 시각화: 십 1개(10판) + 일 (total-10)개
+  root.innerHTML=`
+    <div class="activity has-keypad" style="background:${headerBg}">
+      <div class="instruction" id="instr-text">👉 <span class="t-num">${total}</span> <span class="t-op">-</span> <span class="t-num">${b}</span> — <span class="t-op">받아내림</span>!</div>
+      <div class="activity-canvas" style="flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center">
+          <div style="display:grid;grid-template-columns:repeat(5,48px);gap:6px;padding:10px;background:rgba(255,255,255,.7);border:3px solid var(--split-deep);border-radius:14px">${Array(10).fill('').map(()=>`<div style="width:48px;height:48px;border:3px solid var(--split-deep);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 32% 32%,#fff 6%,var(--split-accent) 70%);box-shadow:0 2px 4px rgba(0,0,0,.2)"></div></div>`).join('')}</div>
+          ${initOnes>0?`<div style="font-family:var(--font-display);font-size:38px;color:var(--split-deep)">+</div><div style="display:flex;gap:6px;padding:10px;background:rgba(255,255,255,.5);border:3px solid var(--split-deep);border-radius:14px">${Array.from({length:initOnes},()=>`<div style="width:48px;height:48px;border:3px solid var(--split-deep);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 32% 32%,#fff 6%,var(--split-accent) 70%);box-shadow:0 2px 4px rgba(0,0,0,.2)"></div></div>`).join('')}</div>`:''}
+        </div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="num-tile">${total}</div>
+          <div style="font-family:var(--font-display);font-size:50px;color:var(--split-deep)">－</div>
+          <div class="num-tile">${b}</div>
+          <div style="font-family:var(--font-display);font-size:50px;color:var(--split-deep)">＝</div>
+          <div class="num-tile target empty input-active" id="answer-slot"><span class="cursor-blink"></span></div>
+        </div>
+      </div>
+      <div class="tutorial-hint">👇 ${b}개를 빼고 남은 동그라미를 세어 봐!</div>
+      <div class="mascot-corner">${svgNaNum(110)}</div>
+      <div class="speech">일이 부족하면 십 1개를 풀어서 일 10개로 바꿔!</div>
+    </div>
+    ${renderKeypad()}
+  `;
+  speakWithHighlight(`${total} 빼기 ${b}`,document.getElementById('instr-text'));
+  setupKeypadCheck(ans,()=>motionTenFrameBorrow(root,total,b,ans));
+}
+
+async function motionTenFrameBorrow(root,total,b,ans){
+  const arena=document.createElement('div');
+  arena.className='count-popup';
+  arena.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.3);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:200;background:#fff;border:5px solid var(--split-deep);border-radius:24px;padding:24px 28px;box-shadow:0 14px 30px rgba(0,0,0,.3);max-width:560px';
+  const tens=Math.floor(ans/10), ones=ans%10;
+  arena.innerHTML=`
+    <div style="font-family:var(--font-display);font-size:26px;color:var(--split-deep);text-align:center;margin-bottom:10px">🌿 십 1개를 풀어 일 10개로!</div>
+    <div style="display:flex;align-items:center;gap:18px;justify-content:center;flex-wrap:wrap">
+      ${tens>0?`<div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="display:grid;grid-template-columns:repeat(2,18px);grid-template-rows:repeat(5,18px);gap:2px;background:var(--split-deep);padding:4px;border-radius:6px">${Array(10).fill('<div style="background:#A8C8F0;border-radius:3px"></div>').join('')}</div>
+        <div style="font-family:var(--font-display);font-size:20px;color:var(--split-deep)">십 ${tens}개</div>
+      </div>${ones>0?'<div style="font-family:var(--font-display);font-size:38px;color:#666">+</div>':''}`:''}
+      ${ones>0?`<div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;max-width:180px">${Array.from({length:ones},()=>`<div style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 32% 32%,#fff 6%,var(--split-accent) 70%);box-shadow:0 2px 4px rgba(0,0,0,.25)"></div>`).join('')}</div>
+        <div style="font-family:var(--font-display);font-size:20px;color:var(--split-deep)">일 ${ones}개</div>
+      </div>`:''}
+    </div>
+    <div style="font-family:var(--font-display);font-size:38px;color:#222;text-align:center;margin-top:14px">${total} - ${b} = <span style="color:var(--split-deep);font-size:48px">${ans}</span></div>
+  `;
+  root.appendChild(arena);
+  await sleep(50);
+  arena.style.opacity='1';
+  arena.style.transform='translate(-50%,-50%) scale(1)';
+  sfxCheer();
+  if(APP_STATE.speakerOn)speak(`${total} 빼기 ${b}은 ${ans}`,{rate:.95});
+  await sleep(2000);
+  arena.style.opacity='0';
+  arena.style.transform='translate(-50%,-50%) scale(.3)';
+  await sleep(400);
+  arena.remove();
+}
+
+// ============================================
+// 🎭 새 활동: 자릿값 세로셈 덧셈 (빨간 커튼 무대)
+// 일의 자리 합 → 10 넘으면 자릿값 1이 *십의 자리로 점프*
+// ============================================
+function drawVerticalAdd(root,q){
+  const a=q.a, b=q.b, total=a+b;
+  const aT=Math.floor(a/10), aO=a%10;
+  const bT=Math.floor(b/10), bO=b%10;
+  const oneSum=aO+bO;
+  const carry=oneSum>=10?1:0;
+  root.innerHTML=`
+    <div class="activity has-keypad" style="background:linear-gradient(180deg,#7A1F1F,#3A0E0E)">
+      <div class="instruction" id="instr-text" style="background:rgba(255,255,255,.95)">🎭 <span class="t-op">세로셈</span> — <span class="t-num">${a}</span> <span class="t-op">+</span> <span class="t-num">${b}</span></div>
+      <div class="activity-canvas" style="flex-direction:column;gap:10px;background:rgba(0,0,0,.2);border:5px solid #FFE066;border-radius:20px;padding:24px 36px;box-shadow:0 0 30px rgba(255,230,0,.4) inset">
+        <div style="display:grid;grid-template-columns:60px 60px;gap:10px;font-family:var(--font-display);font-size:54px;color:#fff;text-align:center;align-items:center;justify-content:center">
+          <div></div><div style="color:#FFE066;font-size:24px;margin-bottom:-4px">${carry?carry:''}</div>
+          <div>${aT||''}</div><div>${aO}</div>
+          <div style="font-size:36px">＋</div><div></div>
+          <div>${bT||''}</div><div>${bO}</div>
+          <div colspan="2" style="grid-column:1/3;border-top:3px solid #FFE066;padding-top:6px"></div>
+          <div id="ans-tens" class="num-tile target empty input-active" style="width:60px;height:80px;font-size:46px">?</div>
+          <div id="ans-ones" class="num-tile target empty" style="width:60px;height:80px;font-size:46px">?</div>
+        </div>
+        <div style="color:#FFE066;font-family:var(--font-display);font-size:18px;text-align:center;margin-top:10px">${carry?'🎯 일끼리 더하니 10이 넘어 → 받아올림 1을 십의 자리로!':'🎯 일끼리 십끼리 같은 자리끼리!'}</div>
+      </div>
+      <div class="tutorial-hint">👇 ${total>=10?'십의 자리부터':'답을'} 입력</div>
+      <div class="mascot-corner">${svgMoEum(110)}</div>
+      <div class="speech">${carry?`일끼리 ${aO}+${bO}=${oneSum}, 받아올림 1!`:`자릿값 맞춰 더해 봐!`}</div>
+    </div>
+    ${renderKeypad()}
+  `;
+  speakWithHighlight(`${a} 더하기 ${b}`,document.getElementById('instr-text'));
+  setupKeypadCheck(total,()=>motionVerticalAdd(root,a,b,total,carry));
+}
+
+async function motionVerticalAdd(root,a,b,total,carry){
+  const arena=document.createElement('div');
+  arena.className='count-popup';
+  arena.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.3);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:200;background:linear-gradient(180deg,#7A1F1F,#3A0E0E);border:5px solid #FFE066;border-radius:24px;padding:24px 36px;box-shadow:0 14px 30px rgba(0,0,0,.5);color:#fff;max-width:560px';
+  arena.innerHTML=`
+    <div style="font-family:var(--font-display);font-size:28px;color:#FFE066;text-align:center;margin-bottom:12px">🎭 ${carry?'받아올림 1이 십의 자리로!':'자릿값 맞춰 더했어!'}</div>
+    <div style="font-family:var(--font-display);font-size:50px;text-align:center">${a} + ${b} = <span style="color:#FFE066;font-size:64px">${total}</span></div>
+    ${carry?`<div style="font-family:var(--font-display);font-size:18px;text-align:center;color:#FFC4C4;margin-top:8px">일의 자리에서 10을 만들어 십의 자리로 ↗</div>`:''}
+  `;
+  root.appendChild(arena);
+  await sleep(50);
+  arena.style.opacity='1';
+  arena.style.transform='translate(-50%,-50%) scale(1)';
+  sfxCheer();
+  if(APP_STATE.speakerOn)speak(`${a} 더하기 ${b}은 ${total}`,{rate:.95});
+  await sleep(2000);
+  arena.style.opacity='0';
+  arena.style.transform='translate(-50%,-50%) scale(.3)';
+  await sleep(400);
+  arena.remove();
+}
+
+// ============================================
+// 🎭 새 활동: 자릿값 세로셈 뺄셈 (받아내림 10)
+// ============================================
+function drawVerticalSub(root,q){
+  const total=q.target, b=q.a, ans=total-b;
+  const tT=Math.floor(total/10), tO=total%10;
+  const bT=Math.floor(b/10), bO=b%10;
+  const borrow=tO<bO?1:0;
+  root.innerHTML=`
+    <div class="activity has-keypad" style="background:linear-gradient(180deg,#7A1F4A,#3A0E2A)">
+      <div class="instruction" id="instr-text" style="background:rgba(255,255,255,.95)">🎭 <span class="t-op">세로셈</span> — <span class="t-num">${total}</span> <span class="t-op">-</span> <span class="t-num">${b}</span></div>
+      <div class="activity-canvas" style="flex-direction:column;gap:10px;background:rgba(0,0,0,.2);border:5px solid #FF9DCC;border-radius:20px;padding:24px 36px;box-shadow:0 0 30px rgba(255,150,200,.4) inset">
+        <div style="display:grid;grid-template-columns:60px 60px;gap:10px;font-family:var(--font-display);font-size:54px;color:#fff;text-align:center;align-items:center;justify-content:center">
+          ${borrow?`<div style="color:#FFC4E3;font-size:24px;text-decoration:line-through">${tT}</div><div style="color:#FFC4E3;font-size:24px">${tO+10}</div>`:`<div></div><div></div>`}
+          <div>${tT||''}</div><div>${tO}</div>
+          <div style="font-size:36px">－</div><div></div>
+          <div>${bT||''}</div><div>${bO}</div>
+          <div colspan="2" style="grid-column:1/3;border-top:3px solid #FF9DCC;padding-top:6px"></div>
+          <div id="ans-tens" class="num-tile target empty input-active" style="width:60px;height:80px;font-size:46px">?</div>
+          <div id="ans-ones" class="num-tile target empty" style="width:60px;height:80px;font-size:46px">?</div>
+        </div>
+        <div style="color:#FFC4E3;font-family:var(--font-display);font-size:18px;text-align:center;margin-top:10px">${borrow?'🎯 일이 부족하면 → 십에서 10을 빌려와!':'🎯 일끼리 십끼리 같은 자리끼리!'}</div>
+      </div>
+      <div class="tutorial-hint">👇 답을 입력 (두 자리 답이면 두 번)</div>
+      <div class="mascot-corner">${svgNaNum(110)}</div>
+      <div class="speech">${borrow?`일이 부족! 십에서 10 빌려와`:`자릿값 맞춰 빼 봐!`}</div>
+    </div>
+    ${renderKeypad()}
+  `;
+  speakWithHighlight(`${total} 빼기 ${b}`,document.getElementById('instr-text'));
+  setupKeypadCheck(ans,()=>motionVerticalSub(root,total,b,ans,borrow));
+}
+
+async function motionVerticalSub(root,total,b,ans,borrow){
+  const arena=document.createElement('div');
+  arena.className='count-popup';
+  arena.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.3);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:200;background:linear-gradient(180deg,#7A1F4A,#3A0E2A);border:5px solid #FF9DCC;border-radius:24px;padding:24px 36px;box-shadow:0 14px 30px rgba(0,0,0,.5);color:#fff;max-width:560px';
+  arena.innerHTML=`
+    <div style="font-family:var(--font-display);font-size:28px;color:#FFC4E3;text-align:center;margin-bottom:12px">🎭 ${borrow?'십 1개 풀어 일 10개 빌려옴!':'자릿값 맞춰 뺐어!'}</div>
+    <div style="font-family:var(--font-display);font-size:50px;text-align:center">${total} - ${b} = <span style="color:#FFC4E3;font-size:64px">${ans}</span></div>
+    ${borrow?`<div style="font-family:var(--font-display);font-size:18px;text-align:center;color:#FFC4E3;margin-top:8px">십에서 10이 풀려 일의 자리로 ↘</div>`:''}
+  `;
+  root.appendChild(arena);
+  await sleep(50);
+  arena.style.opacity='1';
+  arena.style.transform='translate(-50%,-50%) scale(1)';
+  sfxCheer();
+  if(APP_STATE.speakerOn)speak(`${total} 빼기 ${b}은 ${ans}`,{rate:.95});
+  await sleep(2000);
+  arena.style.opacity='0';
+  arena.style.transform='translate(-50%,-50%) scale(.3)';
+  await sleep(400);
+  arena.remove();
+}
+
+// ============================================
+// 🚀 빠른 연산 (Speed Round) — 시간 제한 없이 5문제 연속
+// 가벼운 별점 효과, 등급/순위 X
+// ============================================
+// ============================================
+// 🚀 빠른 연산 — 저학년 친화 (시간 제한 X, 정답률 칭호, 오답 다시 풀기)
+// 곱셈 앱 패턴 참고: 진행 바, 문항 수 선택, 오답 복습, 결과 칭호
+// 1학년 적응: 시간 제한 제거, 보라색 → 노랑·남색, 등급 느낌 없는 응원 칭호
+// ============================================
+function drawSpeedRound(root,q){
+  // 첫 진입 — 문항 수 선택
+  if (!APP_STATE._speedState) {
+    showSpeedSelect(root);
+    return;
+  }
+  const st = APP_STATE._speedState;
+  // 종료 처리
+  if (st.idx >= st.queue.length) {
+    if (st.wrongs.length > 0 && !st.reviewing) {
+      st.reviewing = true;
+      st.queue = st.wrongs.slice();
+      st.wrongs = [];
+      st.idx = 0;
+      showSpeedReviewStart(root, st);
+      return;
+    }
+    showSpeedEnd(root, st);
+    return;
+  }
+  const item = st.queue[st.idx];
+  const ans = item.op === '－' ? (item.a - item.b) : (item.a + item.b);
+  const total = st.queue.length;
+  const progress = (st.idx / total) * 100;
+  const digits = String(ans).length;
+  root.innerHTML = `
+    <div class="activity has-keypad" style="background:linear-gradient(180deg,#1A2438,#0A1024);color:#fff">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;background:rgba(255,255,255,.08);border-radius:14px;margin-bottom:10px">
+        <span style="font-family:var(--font-display);font-size:17px;color:#FFE066;font-weight:bold;white-space:nowrap">🚀 ${st.reviewing?'복습!':'빠른 연산'} ${st.idx+1}/${total}</span>
+        <div style="flex:1;height:10px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden">
+          <div style="height:100%;width:${progress}%;background:linear-gradient(90deg,#FFE066,#FFC23C);border-radius:99px;transition:width .5s"></div>
+        </div>
+      </div>
+      <div class="instruction" id="instr-text" style="background:rgba(255,230,0,.95);color:#222">⚡ 시간 제한 없어요! 천천히 정확하게</div>
+      <div class="activity-canvas" style="gap:18px">
+        <div class="num-tile" style="background:linear-gradient(180deg,#FFE066,#FFC23C);color:#222">${item.a}</div>
+        <div style="font-family:var(--font-display);font-size:70px;color:#FFE066">${item.op||'＋'}</div>
+        <div class="num-tile" style="background:linear-gradient(180deg,#FFE066,#FFC23C);color:#222">${item.b}</div>
+        <div style="font-family:var(--font-display);font-size:70px;color:#FFE066">＝</div>
+        <div class="num-tile target empty input-active" id="answer-slot" style="background:rgba(255,255,255,.1);border-color:#FFE066;color:#FFE066"><span class="cursor-blink"></span></div>
+      </div>
+      <div class="tutorial-hint" style="color:#FFE066;background:rgba(0,0,0,.3)">👇 키패드로 답을 입력해요</div>
+      <div class="mascot-corner">${svgMoEum(100)}</div>
+      <div class="speech" style="background:#FFE066;color:#222">${st.reviewing?'한 번 더!':(st.idx===0?'시작!':st.idx===Math.floor(total/2)?'반 왔어!':'잘하고 있어!')}</div>
+    </div>
+    ${renderKeypad()}
+  `;
+  speakWithHighlight(`${item.a} ${item.op==='－'?'빼기':'더하기'} ${item.b}`,document.getElementById('instr-text'));
+  setupSpeedKeypad(ans, item, st, digits);
+}
+
+function setupSpeedKeypad(ans, item, st, digits) {
+  // 기존 글로벌 키패드 시스템(.key, keyPress/keyDel/keyCheck) 호환
+  CURRENT_INPUT = '';
+  KEYPAD_LOCKED = false;
+  CURRENT_ANSWER_DIGITS = digits;
+  updateInputDisplay();
+  CURRENT_CHECK_FN = async (val) => {
+    if (KEYPAD_LOCKED) return;
+    KEYPAD_LOCKED = true;
+    const slot = document.getElementById('answer-slot');
+    const ok = val === ans;
+    if (slot) {
+      slot.classList.remove('empty', 'input-active');
+      slot.classList.add('filled');
+      slot.textContent = val;
+      slot.style.borderColor = ok ? '#5BB836' : '#FF6B6B';
+      slot.style.background = ok ? 'rgba(91,184,54,.3)' : 'rgba(255,107,107,.3)';
+      slot.style.color = ok ? '#5BB836' : '#FF6B6B';
+    }
+    if (ok) {
+      st.correct++;
+      sfxCorrect();
+    } else {
+      st.wrongs.push(item);
+      sfxWrong();
+      setTimeout(() => {
+        if (slot) slot.textContent = ans;
+        const sp = document.querySelector('.activity .speech');
+        if (sp) { sp.textContent = `정답은 ${ans}이야!`; sp.style.background = '#FFC4C4'; }
+      }, 600);
+    }
+    APP_STATE.correct += ok ? 1 : 0;
+    APP_STATE.total++;
+    await sleep(ok ? 900 : 1700);
+    st.idx++;
+    showScreen('activity');
+  };
+}
+
+function showSpeedSelect(root) {
+  root.innerHTML = `
+    <div class="activity" style="background:linear-gradient(180deg,#1A2438,#0A1024);color:#fff;align-items:center;justify-content:center;gap:20px;padding:30px">
+      <div style="font-family:var(--font-display);font-size:64px;color:#FFE066">🚀</div>
+      <div style="font-family:var(--font-display);font-size:34px;text-align:center;color:#fff">빠른 연산 도전!</div>
+      <div style="font-family:var(--font-display);font-size:17px;color:#FFC4C4;text-align:center;max-width:520px;line-height:1.6">
+        지금까지 배운 걸 연속으로 풀어 봐요!<br>
+        ⏱️ <span style="color:#FFE066">시간 제한은 없어요</span>. 천천히 정확하게 ✨
+      </div>
+      <div style="font-family:var(--font-display);font-size:22px;color:#FFE066;margin-top:10px">몇 문제 도전?</div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;justify-content:center">
+        <button onclick="window.startSpeed&&window.startSpeed(5)" style="background:#FFE066;color:#222;font-size:24px;padding:18px 32px;border-radius:18px;border:none;cursor:pointer;font-family:var(--font-display);box-shadow:0 6px 0 #B8A040;font-weight:bold">
+          5문제<br><span style="font-size:13px;font-weight:normal">금방 끝나요!</span>
+        </button>
+        <button onclick="window.startSpeed&&window.startSpeed(10)" style="background:#FFC23C;color:#222;font-size:24px;padding:18px 32px;border-radius:18px;border:none;cursor:pointer;font-family:var(--font-display);box-shadow:0 6px 0 #8B7000;font-weight:bold">
+          10문제<br><span style="font-size:13px;font-weight:normal">실력 뽐내기!</span>
+        </button>
+      </div>
+      <div class="mascot-corner">${svgMoEum(110)}</div>
+      <div class="speech" style="background:#FFE066;color:#222">준비됐어?</div>
+    </div>
+  `;
+  if (APP_STATE.speakerOn) speak('빠른 연산 도전. 몇 문제 풀어볼까?', {rate:1.0});
+}
+
+window.startSpeed = function(count) {
+  const items = generateSpeedProblems(count);
+  APP_STATE._speedState = {
+    queue: items, idx: 0, correct: 0, wrongs: [],
+    reviewing: false, startTime: Date.now()
+  };
+  showScreen('activity');
+};
+
+function showSpeedReviewStart(root, st) {
+  root.innerHTML = `
+    <div class="activity" style="background:linear-gradient(180deg,#3A1F38,#1A0A1A);color:#fff;align-items:center;justify-content:center;gap:20px;padding:30px">
+      <div style="font-family:var(--font-display);font-size:60px">🌱</div>
+      <div style="font-family:var(--font-display);font-size:34px;text-align:center;color:#FFC4E3">한 번 더!</div>
+      <div style="font-family:var(--font-display);font-size:17px;color:#FFC4C4;text-align:center;max-width:520px;line-height:1.6">
+        틀린 문제 <span style="color:#FFE066;font-size:30px;font-weight:bold">${st.queue.length}개</span>를<br>
+        다시 풀어 봐요! 완벽하게 익혀요 ✨
+      </div>
+      <button onclick="window.continueSpeed&&window.continueSpeed()" style="background:#FFE066;color:#222;font-size:24px;padding:16px 40px;border-radius:18px;border:none;cursor:pointer;font-family:var(--font-display);box-shadow:0 6px 0 #B8A040;margin-top:14px;font-weight:bold">
+        다시 시작 ▶
+      </button>
+      <div class="mascot-corner">${svgMoEum(110)}</div>
+      <div class="speech" style="background:#FFE066;color:#222">파이팅!</div>
+    </div>
+  `;
+  if (APP_STATE.speakerOn) speak(`틀린 ${st.queue.length}개 한 번 더 풀어보자`, {rate:1.0});
+}
+
+window.continueSpeed = function() { showScreen('activity'); };
+
+function showSpeedEnd(root, st) {
+  const total = APP_STATE.total;
+  const correct = APP_STATE.correct;
+  const elapsed = Math.round((Date.now() - st.startTime) / 1000);
+  const min = Math.floor(elapsed / 60), sec = elapsed % 60;
+  const rate = total > 0 ? Math.round((correct / total) * 100) : 0;
+  let badge, msg, bgColor;
+  if (rate >= 95) { badge = '🌟 완벽한 별'; msg = '모든 문제를 정확히 풀었어요!'; bgColor='#FFE066'; }
+  else if (rate >= 80) { badge = '🎉 멋쟁이'; msg = '아주 잘 했어요!'; bgColor='#A8E0FF'; }
+  else if (rate >= 60) { badge = '💪 열심이'; msg = '꾸준히 해 봐요. 좋아지고 있어요!'; bgColor='#FFB1D2'; }
+  else { badge = '🌱 새싹 친구'; msg = '끝까지 도전한 게 멋졌어요!'; bgColor='#B0F0A0'; }
+  const wrongCount = total - correct;
+  root.innerHTML = `
+    <div class="activity" style="background:linear-gradient(180deg,#1A2438,#0A1024);color:#fff;align-items:center;gap:14px;padding:20px;overflow-y:auto">
+      <div style="font-family:var(--font-display);font-size:48px;color:#FFE066">🚀 완주!</div>
+      <div style="font-family:var(--font-display);font-size:36px;background:${bgColor};color:#222;padding:14px 32px;border-radius:18px;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.3)">${badge}</div>
+      <div style="font-family:var(--font-display);font-size:18px;color:#FFC4C4;text-align:center;max-width:520px;line-height:1.5">${msg}</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+        <div style="background:rgba(255,255,255,.1);padding:14px 22px;border-radius:14px;text-align:center;min-width:120px">
+          <div style="font-size:12px;color:#FFC4C4">정답</div>
+          <div style="font-family:var(--font-display);font-size:28px;color:#FFE066">${correct} / ${total}</div>
+        </div>
+        ${wrongCount>0?`<div style="background:rgba(255,107,107,.15);padding:14px 22px;border-radius:14px;text-align:center;min-width:120px">
+          <div style="font-size:12px;color:#FFC4C4">아직 더 연습</div>
+          <div style="font-family:var(--font-display);font-size:28px;color:#FFB4B4">${wrongCount}개</div>
+        </div>`:''}
+        <div style="background:rgba(255,255,255,.1);padding:14px 22px;border-radius:14px;text-align:center;min-width:120px">
+          <div style="font-size:12px;color:#FFC4C4">소요 시간</div>
+          <div style="font-family:var(--font-display);font-size:28px;color:#FFE066">${min>0?min+'분 ':''}${sec}초</div>
+        </div>
+      </div>
+      <button onclick="window.finishSpeed&&window.finishSpeed()" style="background:#FFE066;color:#222;font-size:22px;padding:14px 40px;border-radius:18px;border:none;cursor:pointer;font-family:var(--font-display);margin-top:18px;box-shadow:0 6px 0 #B8A040;font-weight:bold">
+        다음으로 ▶
+      </button>
+      <div class="mascot-corner">${svgMoEum(100)}</div>
+      <div class="speech" style="background:${bgColor};color:#222">대단해요!</div>
+    </div>
+  `;
+  if (APP_STATE.speakerOn) speak(`완주! ${badge.replace(/[🌟🎉💪🌱]/g,'').trim()} 칭호를 받았어요`, {rate:.95});
+  sfxCheer();
+  launchConfetti(70);
+}
+
+window.finishSpeed = function() {
+  APP_STATE._speedState = null;
+  nextActivity();
+};
+
+function generateSpeedProblems(count){
+  const items = [];
+  count = count || 5;
+  if(typeof APP_PREFIX !== 'undefined'){
+    if(APP_PREFIX === 'app1'){
+      for(let i=0;i<count;i++){
+        const a=Math.floor(Math.random()*5)+1;
+        const b=Math.floor(Math.random()*5)+1;
+        items.push({a,b,op:'＋'});
+      }
+    } else if(APP_PREFIX === 'app2'){
+      const pairs=[[6,4],[7,3],[5,5],[8,2],[9,1],[4,6],[3,7],[2,8],[1,9]];
+      for(let i=0;i<count;i++){
+        const [a,b]=pairs[Math.floor(Math.random()*pairs.length)];
+        items.push({a,b,op:'＋'});
+      }
+    } else if(APP_PREFIX === 'app3'){
+      const types=[
+        ()=>{const a=Math.floor(Math.random()*4)+6;const b=Math.floor(Math.random()*(15-a))+(11-a);return {a,b,op:'＋'};},
+        ()=>{const total=Math.floor(Math.random()*7)+11;const b=Math.floor(Math.random()*6)+2;return {a:total,b,op:'－'};}
+      ];
+      for(let i=0;i<count;i++){
+        const t=types[Math.floor(Math.random()*types.length)];
+        items.push(t());
+      }
+    } else {
+      for(let i=0;i<count;i++){
+        const isAdd=Math.random()<0.5;
+        if(isAdd){
+          const a=Math.floor(Math.random()*40)+11;
+          const b=Math.floor(Math.random()*20)+5;
+          items.push({a,b,op:'＋'});
+        } else {
+          const total=Math.floor(Math.random()*60)+30;
+          const b=Math.floor(Math.random()*20)+5;
+          items.push({a:total,b,op:'－'});
+        }
+      }
+    }
+  }
+  return items;
+}
+
 function drawBranchMany(root,q,mode){
   const target=q.target;
   // 옵션 카드 — 짝꿍 보장
@@ -1871,14 +2714,14 @@ function drawBranchMany(root,q,mode){
   const treeRows=isGather?(slotsRow+targetRow):(targetRow+slotsRow);
   root.innerHTML=`
     <div class="activity">
-      <div class="instruction" id="instr-text">${isGather?`👉 모아서 <span class="emph">${target}</span> 만들기`:`👉 <span class="emph">${target}</span>을 두 수로`}</div>
+      <div class="instruction" id="instr-text">${isGather?`👉 두 수를 모아 <span class="t-num">${target}</span> 만들기`:`👉 <span class="t-num">${target}</span>${josaReul(target)} 두 수로 갈라요`}</div>
       <div class="activity-canvas" style="gap:60px">
         <div class="branch-tree">${svg}${treeRows}</div>
         <div class="option-panel">${opts.map(o=>`<div class="opt-card" data-val="${o}">${o}</div>`).join('')}</div>
       </div>
       <div class="tutorial-hint">👆 카드 → 빈칸 순서로 눌러요</div>
       <div class="mascot-corner">${isGather?svgMoEum(110):svgNaNum(110)}</div>
-      <div class="speech">${isGather?`카드 두 장 골라 빈칸에 넣어 봐! 모으면 ${target}!`:`${target}은 어떤 두 수로? 카드 두 장 골라 봐!`}</div>
+      <div class="speech">${isGather?`카드 두 장으로 <span class="t-num">${target}</span> 만들기!`:`<span class="t-num">${target}</span>${josaUn(target)} 어떤 두 수로?`}</div>
     </div>`;
   speakWithHighlight(isGather?`두 카드를 골라 ${target} 만들기`:`${target}을 두 수로 가르기`,document.getElementById('instr-text'));
   setTimeout(()=>{if(APP_STATE.speakerOn)speak(isGather?`카드 두 장을 골라서 빈칸에 넣어. 모으면 ${target}이 되어야 해.`:`${target}을 어떤 두 수로 갈라볼까? 카드 두 장을 골라 봐.`,{rate:1.0});},1700);
@@ -1967,7 +2810,7 @@ function drawSplitEqual(root,q){
   const svgFn=OBJECT_SVG[q.kind]||OBJECT_SVG.bear;
   root.innerHTML=`
     <div class="activity has-keypad">
-      <div class="instruction" id="instr-text">👉 <span class="emph">${total}</span>을 똑같이 나눠요</div>
+      <div class="instruction" id="instr-text">👉 <span class="t-num">${total}</span>${josaReul(total)} <span class="t-rel">똑같이</span> 두 묶음으로</div>
       <div class="activity-canvas" style="flex-direction:column;gap:8px">
         <div class="objects-box" style="border-color:var(--split-deep);min-width:280px;padding:14px">${objsRow(svgFn,total)}</div>
         <div style="font-family:var(--font-display);font-size:28px;color:var(--split-deep)">⬇️</div>
@@ -1997,7 +2840,7 @@ function drawSplitCard(root,q){
   const visBlock=showVis?`<div style="display:flex;align-items:center;gap:18px;padding:12px 20px;background:rgba(255,255,255,.75);border:3px dashed var(--split-deep);border-radius:18px;margin:6px 0 4px;flex-wrap:wrap;justify-content:center;max-width:560px"><div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;max-width:230px">${Array.from({length:a},(_,i)=>`<div style="width:26px;height:26px;background:radial-gradient(circle at 35% 35%,#fff 6%,var(--split-accent) 60%);border:2px solid var(--split-deep);border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,.2)"></div>`).join('')}</div><div style="font-family:var(--font-display);font-size:18px;color:var(--split-deep)">${a}개</div></div><div style="font-family:var(--font-display);font-size:28px;color:#888">|</div><div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;max-width:230px">${Array.from({length:ans},()=>`<div style="width:26px;height:26px;background:#FFFDF0;border:2px dashed var(--split-deep);border-radius:50%"></div>`).join('')}</div><div style="font-family:var(--font-display);font-size:18px;color:#888">? 개</div></div></div>`:'';
   root.innerHTML=`
     <div class="activity has-keypad">
-      <div class="instruction" id="instr-text">👉 <span class="emph">${total}</span>은 <span class="emph">${a}</span>과 어떤 수?</div>
+      <div class="instruction" id="instr-text">👉 <span class="t-num">${total}</span> <span class="t-op">=</span> <span class="t-num">${a}</span> <span class="t-op">+</span> <span class="t-rel">?</span></div>
       ${visBlock}
       <div class="activity-canvas" style="gap:18px">
         <div class="num-tile target">${total}</div>
@@ -2008,7 +2851,7 @@ function drawSplitCard(root,q){
       </div>
       <div class="tutorial-hint">👇 빈칸의 수를 입력해요</div>
       <div class="mascot-corner">${svgNaNum(110)}</div>
-      <div class="speech">${total>=20?`${total}에서 ${a}을 빼 봐!`:`${a} 더하기 얼마?`}</div>
+      <div class="speech">${total>=20?`${total}에서 ${a}${josaReul(a)} 빼 봐!`:`${a} 더하기 얼마?`}</div>
     </div>
     ${renderKeypad()}
   `;
