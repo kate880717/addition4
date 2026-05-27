@@ -51,7 +51,7 @@ body{background:linear-gradient(180deg,#FFF8DD,#FFE9A8);color:#333}
 .tts-char.active{background:var(--highlight);color:#111;padding:0 2px;border-radius:6px;transform:scale(1.08)}
 
 /* 튜토리얼 (버튼 바로 근처) */
-.tutorial-hint{font-family:var(--font-display);font-size:22px;color:#555;background:#FFF8DD;padding:8px 20px;border-radius:999px;display:inline-flex;gap:8px;align-items:center;margin-top:6px;animation:pop .5s;border:2px solid #FFE9A8}
+.tutorial-hint{font-family:var(--font-display);font-size:20px;color:#555;background:#FFF8DD;padding:10px 22px;border-radius:999px;display:inline-flex;gap:8px;align-items:center;margin-top:8px;animation:pop .5s;border:2px solid #FFE9A8;max-width:min(540px,calc(100% - 240px));word-break:keep-all;line-height:1.4;z-index:5;position:relative}
 
 .big-btn{font-family:var(--font-display);font-size:30px;padding:16px 42px;border:none;border-radius:999px;background:linear-gradient(180deg,#FFC23C,#FF9C00);color:#fff;box-shadow:0 6px 0 #C77800,0 12px 24px rgba(0,0,0,.15);cursor:pointer;transition:all .12s;text-shadow:0 2px 0 rgba(0,0,0,.15)}
 .big-btn:hover{transform:translateY(-2px)}
@@ -151,7 +151,7 @@ body{background:linear-gradient(180deg,#FFF8DD,#FFE9A8);color:#333}
 /* 키패드 있을 때 — 마스코트·말풍선 키패드 위로 */
 .activity.has-keypad{padding-bottom:130px}
 .activity.has-keypad .mascot-corner{bottom:130px;width:100px}
-.activity.has-keypad .speech{bottom:230px;font-size:22px}
+.activity.has-keypad .speech{bottom:230px;font-size:19px;max-width:300px;word-break:keep-all;line-height:1.5;padding:10px 16px}
 
 /* 답 입력 박스 — 점선 박스 + 깜박이는 커서 */
 .num-tile.target.empty.input-active{border-style:dashed;border-color:#5BB0FF;background:#F0F7FF;color:#5BB0FF;animation:input-pulse 1.5s ease-in-out infinite}
@@ -241,7 +241,7 @@ body{background:linear-gradient(180deg,#FFF8DD,#FFE9A8);color:#333}
 
 .mascot-corner{position:absolute;bottom:18px;left:22px;width:130px;z-index:10;pointer-events:none;animation:bob 3s ease-in-out infinite}
 .mascot-corner.right{left:auto;right:22px}
-.speech{position:absolute;bottom:120px;left:160px;background:#fff;border:3px solid #333;border-radius:20px;padding:10px 18px;font-family:var(--font-display);font-size:22px;box-shadow:var(--card-shadow);max-width:360px;z-index:11;line-height:1.3}
+.speech{position:absolute;bottom:120px;left:160px;background:#fff;border:3px solid #333;border-radius:20px;padding:12px 20px;font-family:var(--font-display);font-size:21px;box-shadow:var(--card-shadow);max-width:320px;z-index:11;line-height:1.55;word-break:keep-all;overflow-wrap:break-word;text-align:left}
 .speech::before{content:'';position:absolute;bottom:16px;left:-14px;border:9px solid transparent;border-right-color:#333}
 .speech::after{content:'';position:absolute;bottom:17px;left:-10px;border:8px solid transparent;border-right-color:#fff}
 
@@ -293,6 +293,41 @@ body{background:linear-gradient(180deg,#FFF8DD,#FFE9A8);color:#333}
 .answer-box .t-rel,.intro-content .t-rel,.activity .t-rel{color:#2E7D32;background:rgba(46,125,50,.13);padding:2px 9px;border-radius:8px;font-weight:bold;display:inline-block;margin:0 2px}
 .answer-box{line-height:2.2 !important}
 
+
+/* 게임 요소 — 마스코트 옷 + 도감 + 콤보 */
+.mascot-with-cap{position:relative;display:inline-block}
+.grad-cap-svg{position:absolute;top:-22px;left:50%;transform:translateX(-50%);width:90px;height:34px;z-index:5}
+.ribbon-svg{position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:70px;height:18px;z-index:5}
+.cert-collection{margin:18px 0;padding:14px;background:rgba(255,243,200,.5);border-radius:16px;border:2px dashed #E8B100}
+.collection-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:6px}
+.coll-item{min-width:70px}
+.coll-item.on{box-shadow:0 4px 10px rgba(232,177,0,.4);transform:scale(1.04)}
+@keyframes bounce{0%{transform:translateY(0)}100%{transform:translateY(-12px)}}
+
+
+@keyframes pulse-glow{from{box-shadow:0 0 8px rgba(255,230,0,.6)}to{box-shadow:0 0 24px rgba(255,230,0,1)}}
+
+
+/* 한국어 단어 단위 줄바꿈 — 전체 텍스트 영역 */
+.speech, .tutorial-hint, .instruction, .intro-card, .answer-box, .modal-content, .cert-content,
+.feedback-msg, .speech-bubble, .info-text { word-break: keep-all; overflow-wrap: break-word; }
+/* 마스코트 영역이 다른 콘텐츠 가리지 않게 */
+.activity { padding-bottom: 120px; }
+.activity.has-keypad { padding-bottom: 230px; }
+/* 모달/결과 화면 z-index 일관성 */
+.modal-overlay, .count-popup, .arena { z-index: 200 !important; }
+.combo-popup { z-index: 1000 !important; }
+
+
+/* 한국어 줄바꿈 전역 — 단어 단위, 어색한 글자 단위 끊김 방지 */
+body, .activity, .activity *, .modal-content, .modal-content *, .intro-card, .intro-card *,
+.goal-card, .goal-card *, .cert-wrap, .cert-wrap *, .record-wrap, .record-wrap *,
+.dashboard, .dashboard *, .sidebar, .sidebar * { word-break: keep-all; overflow-wrap: break-word; }
+/* 숫자/식 카드는 예외 (긴 식이 들어가지 않음) */
+.num-tile, .opt-card, .anchor, .slot, .eq-card, .conn-card, .key, .kp-btn { word-break: normal !important; }
+/* 인스트럭션 박스 padding 여유 — 길어도 잘리지 않게 */
+.instruction { line-height: 1.5; word-break: keep-all; overflow-wrap: break-word; padding: 12px 24px; }
+
 </style>
 </head>
 <body>
@@ -323,49 +358,47 @@ const FALLBACK_STUDENTS = [
   {no:3,name:'박자릿',clazz:'1-1'},{no:4,name:'최세로',clazz:'1-1'},{no:5,name:'한더하',clazz:'1-1'}
 ];
 const FALLBACK_QUESTIONS = [
-  // [1] 받아올림 없는 두 자리 (도입)
-  {stage:'gather-card',kind:'',a:23,b:4,target:27,meta:''},
-  {stage:'gather-card',kind:'',a:23,b:14,target:37,meta:''},
-  {stage:'gather-card',kind:'',a:35,b:22,target:57,meta:''},
-  // [2] ★ 세로셈 무대 — 받아올림 없는
-  {stage:'vertical-add',kind:'',a:23,b:14,target:37,meta:''},
-  {stage:'vertical-add',kind:'',a:42,b:35,target:77,meta:''},
-  // [3] ★ 세로셈 무대 — 받아올림 있는
-  {stage:'vertical-add',kind:'',a:28,b:5,target:33,meta:''},
-  {stage:'vertical-add',kind:'',a:37,b:8,target:45,meta:''},
-  {stage:'vertical-add',kind:'',a:28,b:15,target:43,meta:''},
-  {stage:'vertical-add',kind:'',a:37,b:24,target:61,meta:''},
-  // [4] ★ 세로셈 무대 — 받아내림 없는
-  {stage:'vertical-sub',kind:'',a:5,b:0,target:27,meta:''},
-  {stage:'vertical-sub',kind:'',a:23,b:0,target:47,meta:''},
-  // [5] ★ 세로셈 무대 — 받아내림 있는
-  {stage:'vertical-sub',kind:'',a:5,b:0,target:32,meta:''},
-  {stage:'vertical-sub',kind:'',a:7,b:0,target:43,meta:''},
-  {stage:'vertical-sub',kind:'',a:28,b:0,target:53,meta:''},
-  // [6] □식 — 두 자리 보수 (양팔 저울)
-  {stage:'gather-find-pair',kind:'',a:28,b:0,target:42,meta:''},
-  {stage:'gather-find-pair',kind:'',a:35,b:0,target:51,meta:''},
-  // [7-A] 작은 수 짝꿍 한 수 찾기 (분지 트리 준비 — 충분히)
+  // [1] 작은 수 짝꿍 한 수 찾기 — 워밍업 (1학년 1·2학기 복습)
   {stage:'gather-find-pair',kind:'',a:7,b:0,target:15,meta:''},
   {stage:'gather-find-pair',kind:'',a:9,b:0,target:15,meta:''},
   {stage:'gather-find-pair',kind:'',a:8,b:0,target:17,meta:''},
   {stage:'gather-find-pair',kind:'',a:9,b:0,target:17,meta:''},
   {stage:'split-find-pair',kind:'',a:7,b:0,target:16,meta:''},
   {stage:'split-find-pair',kind:'',a:8,b:0,target:16,meta:''},
-  // [7-B] 분지 트리 (두 수 모두 — 짝꿍 충분히 익힌 후)
+  // [2] 받아올림 없는 두 자리 (도입)
+  {stage:'gather-card',kind:'',a:23,b:4,target:27,meta:''},
+  {stage:'gather-card',kind:'',a:23,b:14,target:37,meta:''},
+  // [3] 세로셈 — 받아올림 없는
+  {stage:'vertical-add',kind:'',a:23,b:14,target:37,meta:''},
+  {stage:'vertical-add',kind:'',a:42,b:35,target:77,meta:''},
+  // [4] 세로셈 — 받아올림 있는
+  {stage:'vertical-add',kind:'',a:28,b:5,target:33,meta:''},
+  {stage:'vertical-add',kind:'',a:37,b:8,target:45,meta:''},
+  {stage:'vertical-add',kind:'',a:28,b:15,target:43,meta:''},
+  {stage:'vertical-add',kind:'',a:37,b:24,target:61,meta:''},
+  // [5] 세로셈 — 받아내림 없는
+  {stage:'vertical-sub',kind:'',a:5,b:0,target:27,meta:''},
+  {stage:'vertical-sub',kind:'',a:23,b:0,target:47,meta:''},
+  // [6] 세로셈 — 받아내림 있는
+  {stage:'vertical-sub',kind:'',a:5,b:0,target:32,meta:''},
+  {stage:'vertical-sub',kind:'',a:7,b:0,target:43,meta:''},
+  {stage:'vertical-sub',kind:'',a:28,b:0,target:53,meta:''},
+  // [7] ★ □식 — 두 자리 보수 짝꿍 (양팔 저울)
+  {stage:'gather-find-pair',kind:'',a:28,b:0,target:42,meta:''},
+  {stage:'gather-find-pair',kind:'',a:35,b:0,target:51,meta:''},
+  // [8] 분지 트리 — 두 카드 (작은 수 짝꿍 충분히 익혔으니!)
   {stage:'gather-many',kind:'',a:0,b:0,target:15,meta:''},
   {stage:'split-many',kind:'',a:0,b:0,target:16,meta:''},
-  // [8] ★ 식 고르기 — 합이 같은 식
-  {stage:'choose-equation',kind:'',a:0,b:0,target:15,meta:''},
+  // [9] 식 고르기
   {stage:'choose-equation',kind:'',a:0,b:0,target:17,meta:''},
-  // [9] 🚀 빠른 연산
+  // [10] 🚀 빠른 연산
   {stage:'speed-round',kind:'',a:0,b:0,target:1,meta:''},
 ];
 
 const APP_STATE = {
   speakerOn:false,micPermitted:false,micStream:null,
   students:[],questions:[],
-  learnerName:'',learnerClass:'',chosenCount:5,
+  learnerName:'',learnerClass:'',chosenCount:15,
   preRecord:{text:'',audioBase64:null,helpCount:0,redoCount:0},
   postRecord:{text:'',audioBase64:null,helpCount:0,redoCount:0,stars:0,stickers:[]},
   correct:0,total:0,
@@ -596,8 +629,8 @@ function renderMicGate(root){
       <button class="big-btn green" onclick="micProceed(true)">🎤 마이크 허용하기</button>
       <div class="tutorial-hint">💡 위 버튼을 누르면 마이크 허가 창이 떠요</div>
       <button class="skip-btn" onclick="micProceed(false)">마이크 없이 시작 (글로 써서 활동)</button>
-      <div class="mascot-corner">${svgMoEum(130)}</div>
-      <div class="mascot-corner right">${svgNaNum(130)}</div>
+      <div class="mascot-corner"><div class="mascot-with-cap">${svgMoEum(130)}<svg class="grad-cap-svg" viewBox="-40 -22 80 30"><polygon points="-32,-2 32,-2 28,-10 -28,-10" fill="#2A2A4A" stroke="#1A1A30" stroke-width="1"/><rect x="-34" y="-2" width="68" height="5" fill="#2A2A4A" rx="1"/><line x1="18" y1="-4" x2="34" y2="-18" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/><circle cx="34" cy="-18" r="5" fill="#FFD700" stroke="#D4A800" stroke-width="1.5"/></svg></div></div>
+      <div class="mascot-corner right"><div class="mascot-with-cap">${svgNaNum(130)}<svg class="ribbon-svg" viewBox="-30 -8 60 16"><path d="M -22 0 Q -10 -7 0 0 Q 10 -7 22 0 Q 10 7 0 0 Q -10 7 -22 0 Z" fill="#FF6FA8" stroke="#C73874" stroke-width="1.5"/><circle cx="0" cy="0" r="3" fill="#FFD700"/></svg></div></div>
       <div class="speech">잠깐만, 같이 시작하자!</div>
     </div>`;
 }
@@ -624,9 +657,9 @@ function renderSetup(root){
         <div class="setup-row">
           <label>몇 문제를 풀어 볼까요?</label>
           <div class="choice-row" id="count-row">
-            <button data-c="3">3문제</button>
-            <button data-c="5" class="selected">5문제</button>
-            <button data-c="10">10문제</button>
+            <button data-c="10">10문제<br><span style="font-size:.65em;opacity:.8;font-weight:normal">짧게</span></button>
+            <button data-c="15" class="selected">15문제<br><span style="font-size:.65em;opacity:.8;font-weight:normal">보통</span></button>
+            <button data-c="25">25문제<br><span style="font-size:.65em;opacity:.8;font-weight:normal">전체</span></button>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:24px">
@@ -655,19 +688,24 @@ function finishSetup(){
 }
 
 function prepareActivityQueue(){
-  const allStages=['gather-same','gather-mixed','gather-card','gather-many','split-equal','split-card','split-many'];
-  const byStage={};
-  APP_STATE.questions.forEach(q=>{if(!byStage[q.stage])byStage[q.stage]=[];byStage[q.stage].push(q);});
-  const queue=[];let round=0;
-  while(queue.length<APP_STATE.chosenCount){
-    for(const s of allStages){
-      if(queue.length>=APP_STATE.chosenCount)break;
-      if(byStage[s]?.length>0){queue.push(byStage[s][round%byStage[s].length]);}
+  // 데이터에 정의된 학습 순서 그대로 — find-pair → 핵심 활동 → 분지/선잇기 → 빠른 연산
+  // chosenCount보다 적게 풀려면 *앞에서부터* 자르되 마지막 빠른 연산은 보장
+  const all = APP_STATE.questions;
+  const total = all.length;
+  const want = APP_STATE.chosenCount || total;
+  if (want >= total) {
+    APP_STATE.activityQueue = all.slice();
+  } else {
+    // 빠른 연산은 마지막에 보장
+    const speedIdx = all.findIndex(q => q.stage === 'speed-round');
+    if (speedIdx >= 0 && want >= 2) {
+      // [앞에서부터 want-1개] + [speed-round]
+      APP_STATE.activityQueue = all.slice(0, want-1).concat([all[speedIdx]]);
+    } else {
+      APP_STATE.activityQueue = all.slice(0, want);
     }
-    round++; if(round>5)break;
   }
-  APP_STATE.activityQueue=queue.slice(0,APP_STATE.chosenCount);
-  APP_STATE.activityIdx=0;
+  APP_STATE.activityIdx = 0;
 }
 function currentActivityQuestion(){return APP_STATE.activityQueue?APP_STATE.activityQueue[APP_STATE.activityIdx]:null;}
 
@@ -988,8 +1026,90 @@ function nextActivity(){
   if(APP_STATE.activityIdx>=APP_STATE.activityQueue.length)showScreen('inquiry-post');
   else showScreen('activity');
 }
-function recordCorrect(){APP_STATE.correct++;APP_STATE.total++;sfxCorrect();}
-function recordWrong(){APP_STATE.total++;sfxWrong();}
+// ============================================
+// 🎮 게임 요소 시스템 (콤보 별 + 도감)
+// ============================================
+const STAGE_CATEGORY={
+  'gather-same':'모으기','gather-mixed':'모으기','gather-card':'모으기',
+  'split-equal':'가르기','split-card':'가르기',
+  'tenframe-carry':'10판','tenframe-borrow':'10판',
+  'vertical-add':'세로셈','vertical-sub':'세로셈',
+  'gather-find-pair':'짝꿍','split-find-pair':'짝꿍',
+  'gather-many':'분지','split-many':'분지',
+  'connect-pairs':'선잇기','choose-equation':'식고르기',
+  'speed-round':'빠른연산'
+};
+const CATEGORY_INFO={
+  '모으기':{icon:'🛒',label:'모으기'},
+  '가르기':{icon:'🐰',label:'가르기'},
+  '10판':{icon:'🟦',label:'10판'},
+  '세로셈':{icon:'🎭',label:'세로셈'},
+  '짝꿍':{icon:'🤝',label:'짝꿍찾기'},
+  '분지':{icon:'🌳',label:'분지나무'},
+  '선잇기':{icon:'🔗',label:'선잇기'},
+  '식고르기':{icon:'✅',label:'식고르기'},
+  '빠른연산':{icon:'🚀',label:'빠른연산'}
+};
+
+function markCollected(stage){
+  const cat=STAGE_CATEGORY[stage];
+  if(!cat)return;
+  if(!APP_STATE.collected)APP_STATE.collected=[];
+  if(!APP_STATE.collected.includes(cat)){
+    APP_STATE.collected.push(cat);
+    showCollectStamp(cat);
+  }
+}
+
+function showCollectStamp(cat){
+  const info=CATEGORY_INFO[cat];if(!info)return;
+  const stamp=document.createElement('div');
+  stamp.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.3);background:linear-gradient(135deg,#FFE066,#FFC23C);color:#222;padding:18px 28px;border-radius:24px;font-family:var(--font-display);font-size:22px;font-weight:bold;box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:9999;opacity:0;transition:all .5s cubic-bezier(.34,1.56,.64,1);text-align:center;border:4px solid #fff';
+  stamp.innerHTML=`<div style="font-size:46px;line-height:1">${info.icon}</div><div style="font-size:18px;margin-top:6px">🎨 ${info.label} 도감 +1</div>`;
+  document.body.appendChild(stamp);
+  requestAnimationFrame(()=>{
+    stamp.style.opacity='1';
+    stamp.style.transform='translate(-50%,-50%) scale(1)';
+  });
+  if(APP_STATE.speakerOn&&typeof speak==='function')speak(`${info.label} 도감!`,{rate:1.05});
+  setTimeout(()=>{
+    stamp.style.opacity='0';
+    stamp.style.transform='translate(-50%,-50%) scale(.3) translateY(-40px)';
+    setTimeout(()=>stamp.remove(),500);
+  },1400);
+}
+
+function showCombo(n){
+  if(n<2)return;
+  const existing=document.querySelector('.combo-popup');if(existing)existing.remove();
+  const stars='⭐'.repeat(Math.min(n,5));
+  const big=n>=5;
+  const pop=document.createElement('div');
+  pop.className='combo-popup';
+  pop.style.cssText=`position:fixed;top:90px;left:50%;transform:translateX(-50%) translateY(-30px) scale(.8);background:linear-gradient(180deg,${big?'#FFD700':'#FFE066'},${big?'#FF8C00':'#FFC23C'});color:#222;padding:${big?14:10}px ${big?32:24}px;border-radius:99px;font-family:var(--font-display);font-size:${big?28:22}px;font-weight:bold;box-shadow:0 ${big?10:6}px ${big?24:18}px rgba(0,0,0,.35);z-index:1000;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);border:3px solid #fff;white-space:nowrap`;
+  pop.innerHTML=`${stars} ${n}연속!`;
+  document.body.appendChild(pop);
+  requestAnimationFrame(()=>{
+    pop.style.opacity='1';
+    pop.style.transform='translateX(-50%) translateY(0) scale(1)';
+  });
+  if(big){launchConfetti(25);if(APP_STATE.speakerOn)speak(`${n}연속! 정말 잘하고 있어`,{rate:1.05});}
+  setTimeout(()=>{
+    pop.style.opacity='0';
+    pop.style.transform='translateX(-50%) translateY(-30px) scale(.8)';
+    setTimeout(()=>pop.remove(),400);
+  },1600);
+}
+
+function recordCorrect(){
+  APP_STATE.correct++;APP_STATE.total++;
+  APP_STATE.combo=(APP_STATE.combo||0)+1;
+  APP_STATE.maxCombo=Math.max(APP_STATE.maxCombo||0,APP_STATE.combo);
+  sfxCorrect();
+  if(APP_STATE._currentStage)markCollected(APP_STATE._currentStage);
+  if(APP_STATE.combo>=2)showCombo(APP_STATE.combo);
+}
+function recordWrong(){APP_STATE.total++;APP_STATE.combo=0;sfxWrong();}
 function showFeedback(correct,msg){
   const fb=document.getElementById('feedback');const card=document.getElementById('feedback-card');
   card.classList.toggle('wrong',!correct);
@@ -2325,24 +2445,51 @@ function drawVerticalAdd(root,q){
   const bT=Math.floor(b/10), bO=b%10;
   const oneSum=aO+bO;
   const carry=oneSum>=10?1:0;
+  // 수 모형 — 각자 표시
+  const tenBar = `<div style="display:grid;grid-template-columns:repeat(2,9px);grid-template-rows:repeat(5,9px);gap:1px;background:#1565C0;padding:2px;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.2)">${Array(10).fill('<div style="background:#90CAF9;border-radius:1px"></div>').join('')}</div>`;
+  const oneCube = `<div style="width:18px;height:18px;background:radial-gradient(circle at 32% 32%,#fff 6%,#E53935 70%);border:1.5px solid #B71C1C;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.25)"></div>`;
+  function modelHtml(t, o){
+    return `<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.9);padding:8px 12px;border-radius:12px;flex-wrap:wrap;justify-content:center;min-width:140px">
+      <div style="display:flex;gap:3px">${Array(t).fill(tenBar).join('')}</div>
+      ${t>0&&o>0?'<div style="color:#666;font-family:var(--font-display);font-size:14px">·</div>':''}
+      <div style="display:grid;grid-template-columns:repeat(5,18px);gap:3px;max-width:100px">${Array(o).fill(oneCube).join('')}</div>
+    </div>`;
+  }
   root.innerHTML=`
     <div class="activity has-keypad" style="background:linear-gradient(180deg,#7A1F1F,#3A0E0E)">
       <div class="instruction" id="instr-text" style="background:rgba(255,255,255,.95)">🎭 <span class="t-op">세로셈</span> — <span class="t-num">${a}</span> <span class="t-op">+</span> <span class="t-num">${b}</span></div>
-      <div class="activity-canvas" style="flex-direction:column;gap:10px;background:rgba(0,0,0,.2);border:5px solid #FFE066;border-radius:20px;padding:24px 36px;box-shadow:0 0 30px rgba(255,230,0,.4) inset">
-        <div style="display:grid;grid-template-columns:60px 60px;gap:10px;font-family:var(--font-display);font-size:54px;color:#fff;text-align:center;align-items:center;justify-content:center">
-          <div></div><div style="color:#FFE066;font-size:24px;margin-bottom:-4px">${carry?carry:''}</div>
-          <div>${aT||''}</div><div>${aO}</div>
-          <div style="font-size:36px">＋</div><div></div>
-          <div>${bT||''}</div><div>${bO}</div>
-          <div colspan="2" style="grid-column:1/3;border-top:3px solid #FFE066;padding-top:6px"></div>
-          <div id="ans-tens" class="num-tile target empty input-active" style="width:60px;height:80px;font-size:46px">?</div>
-          <div id="ans-ones" class="num-tile target empty" style="width:60px;height:80px;font-size:46px">?</div>
+      <!-- 수 모형 영역 — 각자 -->
+      <div id="model-area" style="display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:8px;padding:10px;background:rgba(0,0,0,.15);border-radius:14px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="font-family:var(--font-display);font-size:18px;color:#FFE066">${a}</div>
+          ${modelHtml(aT, aO)}
         </div>
-        <div style="color:#FFE066;font-family:var(--font-display);font-size:18px;text-align:center;margin-top:10px">${carry?'🎯 일끼리 더하니 10이 넘어 → 받아올림 1을 십의 자리로!':'🎯 일끼리 십끼리 같은 자리끼리!'}</div>
+        <div style="font-family:var(--font-display);font-size:32px;color:#FFE066">＋</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="font-family:var(--font-display);font-size:18px;color:#FFE066">${b}</div>
+          ${modelHtml(bT, bO)}
+        </div>
+        <div style="font-family:var(--font-display);font-size:32px;color:#FFE066">＝</div>
+        <div id="model-sum" style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:140px">
+          <div style="font-family:var(--font-display);font-size:18px;color:#FFE066">?</div>
+          <div style="font-family:var(--font-display);font-size:36px;color:#FFE066;padding:8px 14px;border:2px dashed #FFE066;border-radius:10px">?</div>
+        </div>
       </div>
-      <div class="tutorial-hint">👇 ${total>=10?'십의 자리부터':'답을'} 입력</div>
-      <div class="mascot-corner">${svgMoEum(110)}</div>
-      <div class="speech">${carry?`일끼리 ${aO}+${bO}=${oneSum}, 받아올림 1!`:`자릿값 맞춰 더해 봐!`}</div>
+      <div class="activity-canvas" style="flex-direction:column;gap:6px;background:rgba(0,0,0,.2);border:4px solid #FFE066;border-radius:18px;padding:18px 30px;box-shadow:0 0 24px rgba(255,230,0,.3) inset">
+        <div style="display:grid;grid-template-columns:54px 54px;gap:8px;font-family:var(--font-display);font-size:44px;color:#fff;text-align:center;align-items:center">
+          <div></div><div style="color:#FFE066;font-size:20px;margin-bottom:-4px">${carry?carry:''}</div>
+          <div>${aT||''}</div><div>${aO}</div>
+          <div style="font-size:30px">＋</div><div></div>
+          <div>${bT||''}</div><div>${bO}</div>
+          <div style="grid-column:1/3;border-top:3px solid #FFE066;padding-top:4px"></div>
+          <div id="ans-tens" class="num-tile target empty input-active" style="width:54px;height:70px;font-size:40px">?</div>
+          <div id="ans-ones" class="num-tile target empty" style="width:54px;height:70px;font-size:40px">?</div>
+        </div>
+        <div style="color:#FFE066;font-family:var(--font-display);font-size:15px;text-align:center;margin-top:6px">${carry?'🎯 일끼리 더하면 10 넘음 → <span class="t-op" style="background:rgba(255,230,0,.3)">받아올림 1</span>!':'🎯 같은 자리끼리'}</div>
+      </div>
+      <div class="tutorial-hint">👇 답을 입력</div>
+      <div class="mascot-corner">${svgMoEum(100)}</div>
+      <div class="speech">${carry?`<span class="t-num">${aO}+${bO}=${oneSum}</span>, 받아올림 1!`:`자릿값 맞춰 더해요!`}</div>
     </div>
     ${renderKeypad()}
   `;
@@ -2351,13 +2498,52 @@ function drawVerticalAdd(root,q){
 }
 
 async function motionVerticalAdd(root,a,b,total,carry){
+  // 모형 합쳐지는 동적 모션 — 단계적
+  const aT=Math.floor(a/10),aO=a%10;
+  const bT=Math.floor(b/10),bO=b%10;
+  const totT=Math.floor(total/10),totO=total%10;
+  const sumArea=document.getElementById('model-sum');
+  if(sumArea){
+    const tenBar = `<div style="display:grid;grid-template-columns:repeat(2,9px);grid-template-rows:repeat(5,9px);gap:1px;background:#1565C0;padding:2px;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.2)">${Array(10).fill('<div style="background:#90CAF9;border-radius:1px"></div>').join('')}</div>`;
+    const oneCube = `<div style="width:18px;height:18px;background:radial-gradient(circle at 32% 32%,#fff 6%,#E53935 70%);border:1.5px solid #B71C1C;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.25)"></div>`;
+    const newTenBar = `<div style="display:grid;grid-template-columns:repeat(2,9px);grid-template-rows:repeat(5,9px);gap:1px;background:#FFE066;padding:2px;border-radius:3px;box-shadow:0 0 12px #FFE066;animation:pulse-glow 1s infinite alternate">${Array(10).fill('<div style="background:#FFF59D;border-radius:1px"></div>').join('')}</div>`;
+    // 단계 1: 일끼리 합치기
+    sumArea.innerHTML = `
+      <div style="font-family:var(--font-display);font-size:14px;color:#FFC4C4">일끼리 합치는 중...</div>
+      <div style="display:grid;grid-template-columns:repeat(5,18px);gap:3px;max-width:100px">${Array(aO+bO).fill(oneCube).join('')}</div>
+    `;
+    await sleep(900);
+    // 단계 2: 받아올림 (있다면)
+    if (carry) {
+      sumArea.innerHTML = `
+        <div style="font-family:var(--font-display);font-size:14px;color:#FFE066">🎯 10개 묶어 십 1개로!</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          ${newTenBar}
+          <div style="font-family:var(--font-display);font-size:18px;color:#FFE066">+</div>
+          <div style="display:grid;grid-template-columns:repeat(5,18px);gap:3px">${Array(totO).fill(oneCube).join('')}</div>
+        </div>
+      `;
+      await sleep(1100);
+    }
+    // 단계 3: 십끼리 합치기
+    const allTens = aT + bT + (carry ? 1 : 0);
+    sumArea.innerHTML = `
+      <div style="font-family:var(--font-display);font-size:18px;color:#FFE066">${total}</div>
+      <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.9);padding:8px 12px;border-radius:12px">
+        <div style="display:flex;gap:3px">${Array(allTens).fill(tenBar).join('')}</div>
+        ${allTens>0&&totO>0?'<div style="color:#666;font-family:var(--font-display);font-size:14px">·</div>':''}
+        <div style="display:grid;grid-template-columns:repeat(5,18px);gap:3px">${Array(totO).fill(oneCube).join('')}</div>
+      </div>
+    `;
+    await sleep(900);
+  }
+  // 최종 결과 카드
   const arena=document.createElement('div');
   arena.className='count-popup';
-  arena.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.3);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:200;background:linear-gradient(180deg,#7A1F1F,#3A0E0E);border:5px solid #FFE066;border-radius:24px;padding:24px 36px;box-shadow:0 14px 30px rgba(0,0,0,.5);color:#fff;max-width:560px';
+  arena.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.3);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:200;background:linear-gradient(180deg,#7A1F1F,#3A0E0E);border:5px solid #FFE066;border-radius:24px;padding:22px 32px;box-shadow:0 14px 30px rgba(0,0,0,.5);color:#fff;max-width:520px';
   arena.innerHTML=`
-    <div style="font-family:var(--font-display);font-size:28px;color:#FFE066;text-align:center;margin-bottom:12px">🎭 ${carry?'받아올림 1이 십의 자리로!':'자릿값 맞춰 더했어!'}</div>
-    <div style="font-family:var(--font-display);font-size:50px;text-align:center">${a} + ${b} = <span style="color:#FFE066;font-size:64px">${total}</span></div>
-    ${carry?`<div style="font-family:var(--font-display);font-size:18px;text-align:center;color:#FFC4C4;margin-top:8px">일의 자리에서 10을 만들어 십의 자리로 ↗</div>`:''}
+    <div style="font-family:var(--font-display);font-size:26px;color:#FFE066;text-align:center;margin-bottom:8px">🎭 ${carry?'받아올림 성공!':'잘 더했어요!'}</div>
+    <div style="font-family:var(--font-display);font-size:46px;text-align:center">${a} + ${b} = <span style="color:#FFE066;font-size:60px">${total}</span></div>
   `;
   root.appendChild(arena);
   await sleep(50);
@@ -2365,7 +2551,7 @@ async function motionVerticalAdd(root,a,b,total,carry){
   arena.style.transform='translate(-50%,-50%) scale(1)';
   sfxCheer();
   if(APP_STATE.speakerOn)speak(`${a} 더하기 ${b}은 ${total}`,{rate:.95});
-  await sleep(2000);
+  await sleep(1800);
   arena.style.opacity='0';
   arena.style.transform='translate(-50%,-50%) scale(.3)';
   await sleep(400);
@@ -2380,24 +2566,49 @@ function drawVerticalSub(root,q){
   const tT=Math.floor(total/10), tO=total%10;
   const bT=Math.floor(b/10), bO=b%10;
   const borrow=tO<bO?1:0;
+  const tenBar = `<div style="display:grid;grid-template-columns:repeat(2,9px);grid-template-rows:repeat(5,9px);gap:1px;background:#1565C0;padding:2px;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.2)">${Array(10).fill('<div style="background:#90CAF9;border-radius:1px"></div>').join('')}</div>`;
+  const oneCube = `<div style="width:18px;height:18px;background:radial-gradient(circle at 32% 32%,#fff 6%,#E53935 70%);border:1.5px solid #B71C1C;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.25)"></div>`;
+  function modelHtml(t, o, mark){
+    return `<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,${mark?'.4':.9});padding:8px 12px;border-radius:12px;flex-wrap:wrap;justify-content:center;min-width:140px;${mark?'border:2px dashed #FF9DCC':''}">
+      <div style="display:flex;gap:3px">${Array(t).fill(tenBar).join('')}</div>
+      ${t>0&&o>0?'<div style="color:#666;font-family:var(--font-display);font-size:14px">·</div>':''}
+      <div style="display:grid;grid-template-columns:repeat(5,18px);gap:3px">${Array(o).fill(oneCube).join('')}</div>
+    </div>`;
+  }
   root.innerHTML=`
     <div class="activity has-keypad" style="background:linear-gradient(180deg,#7A1F4A,#3A0E2A)">
       <div class="instruction" id="instr-text" style="background:rgba(255,255,255,.95)">🎭 <span class="t-op">세로셈</span> — <span class="t-num">${total}</span> <span class="t-op">-</span> <span class="t-num">${b}</span></div>
-      <div class="activity-canvas" style="flex-direction:column;gap:10px;background:rgba(0,0,0,.2);border:5px solid #FF9DCC;border-radius:20px;padding:24px 36px;box-shadow:0 0 30px rgba(255,150,200,.4) inset">
-        <div style="display:grid;grid-template-columns:60px 60px;gap:10px;font-family:var(--font-display);font-size:54px;color:#fff;text-align:center;align-items:center;justify-content:center">
-          ${borrow?`<div style="color:#FFC4E3;font-size:24px;text-decoration:line-through">${tT}</div><div style="color:#FFC4E3;font-size:24px">${tO+10}</div>`:`<div></div><div></div>`}
-          <div>${tT||''}</div><div>${tO}</div>
-          <div style="font-size:36px">－</div><div></div>
-          <div>${bT||''}</div><div>${bO}</div>
-          <div colspan="2" style="grid-column:1/3;border-top:3px solid #FF9DCC;padding-top:6px"></div>
-          <div id="ans-tens" class="num-tile target empty input-active" style="width:60px;height:80px;font-size:46px">?</div>
-          <div id="ans-ones" class="num-tile target empty" style="width:60px;height:80px;font-size:46px">?</div>
+      <div id="model-area" style="display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:8px;padding:10px;background:rgba(0,0,0,.15);border-radius:14px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="font-family:var(--font-display);font-size:18px;color:#FFC4E3">${total}</div>
+          ${modelHtml(tT, tO)}
         </div>
-        <div style="color:#FFC4E3;font-family:var(--font-display);font-size:18px;text-align:center;margin-top:10px">${borrow?'🎯 일이 부족하면 → 십에서 10을 빌려와!':'🎯 일끼리 십끼리 같은 자리끼리!'}</div>
+        <div style="font-family:var(--font-display);font-size:32px;color:#FFC4E3">－</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="font-family:var(--font-display);font-size:18px;color:#FFC4E3">${b} (뺄 것)</div>
+          ${modelHtml(bT, bO, true)}
+        </div>
+        <div style="font-family:var(--font-display);font-size:32px;color:#FFC4E3">＝</div>
+        <div id="model-sum" style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:140px">
+          <div style="font-family:var(--font-display);font-size:18px;color:#FFC4E3">?</div>
+          <div style="font-family:var(--font-display);font-size:36px;color:#FFC4E3;padding:8px 14px;border:2px dashed #FFC4E3;border-radius:10px">?</div>
+        </div>
       </div>
-      <div class="tutorial-hint">👇 답을 입력 (두 자리 답이면 두 번)</div>
-      <div class="mascot-corner">${svgNaNum(110)}</div>
-      <div class="speech">${borrow?`일이 부족! 십에서 10 빌려와`:`자릿값 맞춰 빼 봐!`}</div>
+      <div class="activity-canvas" style="flex-direction:column;gap:6px;background:rgba(0,0,0,.2);border:4px solid #FF9DCC;border-radius:18px;padding:18px 30px">
+        <div style="display:grid;grid-template-columns:54px 54px;gap:8px;font-family:var(--font-display);font-size:44px;color:#fff;text-align:center;align-items:center">
+          ${borrow?`<div style="color:#FFC4E3;font-size:20px;text-decoration:line-through">${tT}</div><div style="color:#FFC4E3;font-size:20px">${tO+10}</div>`:`<div></div><div></div>`}
+          <div>${tT||''}</div><div>${tO}</div>
+          <div style="font-size:30px">－</div><div></div>
+          <div>${bT||''}</div><div>${bO}</div>
+          <div style="grid-column:1/3;border-top:3px solid #FF9DCC;padding-top:4px"></div>
+          <div id="ans-tens" class="num-tile target empty input-active" style="width:54px;height:70px;font-size:40px">?</div>
+          <div id="ans-ones" class="num-tile target empty" style="width:54px;height:70px;font-size:40px">?</div>
+        </div>
+        <div style="color:#FFC4E3;font-family:var(--font-display);font-size:15px;text-align:center;margin-top:6px">${borrow?'🎯 일이 부족 → <span class="t-op" style="background:rgba(255,200,225,.3)">십에서 10 빌리기</span>!':'🎯 같은 자리끼리'}</div>
+      </div>
+      <div class="tutorial-hint">👇 답을 입력</div>
+      <div class="mascot-corner">${svgNaNum(100)}</div>
+      <div class="speech">${borrow?`일이 부족! 십에서 10 빌려와`:`자릿값 맞춰 빼요!`}</div>
     </div>
     ${renderKeypad()}
   `;
@@ -2406,13 +2617,50 @@ function drawVerticalSub(root,q){
 }
 
 async function motionVerticalSub(root,total,b,ans,borrow){
+  const tT=Math.floor(total/10),tO=total%10;
+  const bT=Math.floor(b/10),bO=b%10;
+  const ansT=Math.floor(ans/10),ansO=ans%10;
+  const sumArea=document.getElementById('model-sum');
+  if(sumArea){
+    const tenBar = `<div style="display:grid;grid-template-columns:repeat(2,9px);grid-template-rows:repeat(5,9px);gap:1px;background:#1565C0;padding:2px;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.2)">${Array(10).fill('<div style="background:#90CAF9;border-radius:1px"></div>').join('')}</div>`;
+    const oneCube = `<div style="width:18px;height:18px;background:radial-gradient(circle at 32% 32%,#fff 6%,#E53935 70%);border:1.5px solid #B71C1C;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.25)"></div>`;
+    // 단계 1: 받아내림 (있다면)
+    if (borrow) {
+      sumArea.innerHTML = `
+        <div style="font-family:var(--font-display);font-size:14px;color:#FFC4E3">🎯 십 1개를 풀어 일 10개로!</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="display:flex;gap:3px">${Array(tT-1).fill(tenBar).join('')}</div>
+          <div style="font-family:var(--font-display);font-size:14px;color:#FFE066">→</div>
+          <div style="display:grid;grid-template-columns:repeat(5,18px);gap:3px;animation:pulse-glow 1s infinite alternate">${Array(10+tO).fill(oneCube).join('')}</div>
+        </div>
+      `;
+      await sleep(1200);
+    }
+    // 단계 2: 빼기
+    sumArea.innerHTML = `
+      <div style="font-family:var(--font-display);font-size:14px;color:#FFC4E3">${b} 빼는 중...</div>
+      <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.9);padding:8px 12px;border-radius:12px">
+        <div style="display:flex;gap:3px">${Array(ansT).fill(tenBar).join('')}</div>
+        ${ansT>0&&ansO>0?'<div style="color:#666;font-family:var(--font-display);font-size:14px">·</div>':''}
+        <div style="display:grid;grid-template-columns:repeat(5,18px);gap:3px">${Array(ansO).fill(oneCube).join('')}</div>
+      </div>
+    `;
+    await sleep(900);
+    sumArea.innerHTML = `
+      <div style="font-family:var(--font-display);font-size:18px;color:#FFC4E3">${ans}</div>
+      <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.9);padding:8px 12px;border-radius:12px">
+        <div style="display:flex;gap:3px">${Array(ansT).fill(tenBar).join('')}</div>
+        ${ansT>0&&ansO>0?'<div style="color:#666;font-family:var(--font-display);font-size:14px">·</div>':''}
+        <div style="display:grid;grid-template-columns:repeat(5,18px);gap:3px">${Array(ansO).fill(oneCube).join('')}</div>
+      </div>
+    `;
+  }
   const arena=document.createElement('div');
   arena.className='count-popup';
-  arena.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.3);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:200;background:linear-gradient(180deg,#7A1F4A,#3A0E2A);border:5px solid #FF9DCC;border-radius:24px;padding:24px 36px;box-shadow:0 14px 30px rgba(0,0,0,.5);color:#fff;max-width:560px';
+  arena.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.3);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:200;background:linear-gradient(180deg,#7A1F4A,#3A0E2A);border:5px solid #FF9DCC;border-radius:24px;padding:22px 32px;box-shadow:0 14px 30px rgba(0,0,0,.5);color:#fff;max-width:520px';
   arena.innerHTML=`
-    <div style="font-family:var(--font-display);font-size:28px;color:#FFC4E3;text-align:center;margin-bottom:12px">🎭 ${borrow?'십 1개 풀어 일 10개 빌려옴!':'자릿값 맞춰 뺐어!'}</div>
-    <div style="font-family:var(--font-display);font-size:50px;text-align:center">${total} - ${b} = <span style="color:#FFC4E3;font-size:64px">${ans}</span></div>
-    ${borrow?`<div style="font-family:var(--font-display);font-size:18px;text-align:center;color:#FFC4E3;margin-top:8px">십에서 10이 풀려 일의 자리로 ↘</div>`:''}
+    <div style="font-family:var(--font-display);font-size:26px;color:#FFC4E3;text-align:center;margin-bottom:8px">🎭 ${borrow?'받아내림 성공!':'잘 뺐어요!'}</div>
+    <div style="font-family:var(--font-display);font-size:46px;text-align:center">${total} - ${b} = <span style="color:#FFC4E3;font-size:60px">${ans}</span></div>
   `;
   root.appendChild(arena);
   await sleep(50);
@@ -2420,7 +2668,7 @@ async function motionVerticalSub(root,total,b,ans,borrow){
   arena.style.transform='translate(-50%,-50%) scale(1)';
   sfxCheer();
   if(APP_STATE.speakerOn)speak(`${total} 빼기 ${b}은 ${ans}`,{rate:.95});
-  await sleep(2000);
+  await sleep(1800);
   arena.style.opacity='0';
   arena.style.transform='translate(-50%,-50%) scale(.3)';
   await sleep(400);
@@ -2451,6 +2699,12 @@ function drawSpeedRound(root,q){
       st.wrongs = [];
       st.idx = 0;
       showSpeedReviewStart(root, st);
+      return;
+    }
+    // 보너스 라운드 — 5문제 완주 + 오답 복습까지 끝 + 아직 보너스 미제안
+    if (!st.bonusOffered && st.startCount === 5 && APP_STATE.total > 0) {
+      st.bonusOffered = true;
+      showBonusOffer(root, st);
       return;
     }
     showSpeedEnd(root, st);
@@ -2555,9 +2809,54 @@ window.startSpeed = function(count) {
   const items = generateSpeedProblems(count);
   APP_STATE._speedState = {
     queue: items, idx: 0, correct: 0, wrongs: [],
-    reviewing: false, startTime: Date.now()
+    reviewing: false, startTime: Date.now(),
+    startCount: count, bonusOffered: false
   };
   showScreen('activity');
+};
+
+// 🎁 보너스 라운드 — 5문제 완주 후 +3 도전 옵션
+function showBonusOffer(root, st) {
+  root.innerHTML = `
+    <div class="activity" style="background:linear-gradient(180deg,#3A2A1A,#1A1410);color:#fff;align-items:center;justify-content:center;gap:20px;padding:30px">
+      <div style="font-family:var(--font-display);font-size:72px;animation:bounce 1s infinite alternate">🎁</div>
+      <div style="font-family:var(--font-display);font-size:34px;color:#FFE066;text-align:center">보너스 라운드!</div>
+      <div style="font-family:var(--font-display);font-size:18px;color:#FFC4C4;text-align:center;max-width:520px;line-height:1.6">
+        5문제 다 풀었어요! 👏<br>
+        <span style="color:#FFE066;font-size:22px">+3문제</span> 더 도전해볼까?
+      </div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:6px">
+        <button onclick="window.acceptBonus&&window.acceptBonus()" style="background:#FFE066;color:#222;font-size:22px;padding:16px 32px;border-radius:18px;border:none;cursor:pointer;font-family:var(--font-display);box-shadow:0 6px 0 #B8A040;font-weight:bold">
+          🚀 +3 도전!
+        </button>
+        <button onclick="window.skipBonus&&window.skipBonus()" style="background:#A8C0D8;color:#222;font-size:20px;padding:16px 28px;border-radius:18px;border:none;cursor:pointer;font-family:var(--font-display);box-shadow:0 6px 0 #6080A0">
+          이만 마칠게요
+        </button>
+      </div>
+      <div class="mascot-corner">${svgMoEum(110)}</div>
+      <div class="speech" style="background:#FFE066;color:#222">자신 있으면 도전!</div>
+    </div>
+  `;
+  if (APP_STATE.speakerOn) speak('보너스 라운드. 세 문제 더 도전해볼까?', {rate:1.0});
+  sfxCheer();
+}
+
+window.acceptBonus = function() {
+  const st = APP_STATE._speedState;
+  if (!st) return;
+  const bonus = generateSpeedProblems(3);
+  st.queue = st.queue.concat(bonus);
+  st.bonusActive = true;
+  if (APP_STATE.speakerOn) speak('보너스 시작', {rate:1.0});
+  showScreen('activity');
+};
+
+window.skipBonus = function() {
+  const st = APP_STATE._speedState;
+  if (!st) return;
+  // 활동 영역 가져와서 결과 화면 그대로
+  const root = document.querySelector('#screen-activity') || document.querySelector('.activity').parentElement;
+  showSpeedEnd(root, st);
 };
 
 function showSpeedReviewStart(root, st) {
@@ -2886,17 +3185,34 @@ function renderCert(root){
           <div class="dash-card"><div class="num">${st||'—'}</div><div class="label">🎁 스티커</div></div>
           <div class="dash-card"><div class="num">${APP_STATE.preRecord.helpCount+APP_STATE.postRecord.helpCount}</div><div class="label">💡 도움받음</div></div>
         </div>
-        <div style="text-align:center;font-family:var(--font-display);font-size:22px;color:#666;margin-top:6px">${getFinalMessage()}</div>
+        <div class="cert-collection">
+          <h3 style="text-align:center;font-family:var(--font-display);font-size:22px;color:#444;margin:14px 0 10px">🎨 오늘의 도감</h3>
+          <div class="collection-grid">${renderCollection()}</div>
+        </div>
+        <div style="text-align:center;font-family:var(--font-display);font-size:22px;color:#666;margin-top:14px">${getFinalMessage()}</div>
       </div>
       <div class="cert-buttons">
         <button class="big-btn" onclick="downloadCert()">📥 임명장 저장</button>
         <button class="big-btn green" onclick="goHome()">🔄 처음부터 다시</button>
       </div>
-      <div class="mascot-corner">${svgMoEum(130)}</div>
-      <div class="mascot-corner right">${svgNaNum(130)}</div>
+      <div class="mascot-corner"><div class="mascot-with-cap">${svgMoEum(130)}<svg class="grad-cap-svg" viewBox="-40 -22 80 30"><polygon points="-32,-2 32,-2 28,-10 -28,-10" fill="#2A2A4A" stroke="#1A1A30" stroke-width="1"/><rect x="-34" y="-2" width="68" height="5" fill="#2A2A4A" rx="1"/><line x1="18" y1="-4" x2="34" y2="-18" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/><circle cx="34" cy="-18" r="5" fill="#FFD700" stroke="#D4A800" stroke-width="1.5"/></svg></div></div>
+      <div class="mascot-corner right"><div class="mascot-with-cap">${svgNaNum(130)}<svg class="ribbon-svg" viewBox="-30 -8 60 16"><path d="M -22 0 Q -10 -7 0 0 Q 10 -7 22 0 Q 10 7 0 0 Q -10 7 -22 0 Z" fill="#FF6FA8" stroke="#C73874" stroke-width="1.5"/><circle cx="0" cy="0" r="3" fill="#FFD700"/></svg></div></div>
       <div class="speech">정말 잘했어! 🎉</div>
     </div>`;
   speak('수료증을 받았어요. 정말 잘했어요');
+}
+function renderCollection(){
+  // 이 앱에서 사용된 카테고리 추출
+  const usedCats=[...new Set(APP_STATE.questions.map(q=>STAGE_CATEGORY[q.stage]).filter(Boolean))];
+  const collected=new Set(APP_STATE.collected||[]);
+  return usedCats.map(cat=>{
+    const info=CATEGORY_INFO[cat];
+    const done=collected.has(cat);
+    return `<div class="coll-item ${done?'on':''}" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:14px;background:${done?'linear-gradient(180deg,#FFE066,#FFC23C)':'#F0F0F0'};border:3px solid ${done?'#E8B100':'#D0D0D0'};opacity:${done?'1':'.4'};transition:all .3s">
+      <div style="font-size:34px;filter:${done?'none':'grayscale(1)'}">${info.icon}</div>
+      <div style="font-family:var(--font-display);font-size:13px;color:${done?'#5A3A00':'#999'};font-weight:bold">${info.label}</div>
+    </div>`;
+  }).join('');
 }
 function getFinalMessage(){
   const c=APP_STATE.correct,t=APP_STATE.total;
