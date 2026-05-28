@@ -51,7 +51,7 @@ body{background:linear-gradient(180deg,#FFF8DD,#FFE9A8);color:#333}
 .tts-char.active{background:var(--highlight);color:#111;padding:0 2px;border-radius:6px;transform:scale(1.08)}
 
 /* 튜토리얼 (버튼 바로 근처) */
-.tutorial-hint{font-family:var(--font-display);font-size:20px;color:#555;background:#FFF8DD;padding:10px 22px;border-radius:999px;display:inline-flex;gap:8px;align-items:center;margin-top:8px;animation:pop .5s;border:2px solid #FFE9A8;max-width:min(540px,calc(100% - 240px));word-break:keep-all;line-height:1.4;z-index:5;position:relative}
+.tutorial-hint{font-family:var(--font-display);font-size:20px;color:#555;background:#FFF8DD;padding:10px 26px;border-radius:999px;display:inline-block;margin-top:8px;animation:pop .5s;border:2px solid #FFE9A8;width:max-content;max-width:min(760px,92vw);word-break:keep-all;line-height:1.4;z-index:5;position:relative;white-space:normal;text-align:center}
 
 .big-btn{font-family:var(--font-display);font-size:30px;padding:16px 42px;border:none;border-radius:999px;background:linear-gradient(180deg,#FFC23C,#FF9C00);color:#fff;box-shadow:0 6px 0 #C77800,0 12px 24px rgba(0,0,0,.15);cursor:pointer;transition:all .12s;text-shadow:0 2px 0 rgba(0,0,0,.15)}
 .big-btn:hover{transform:translateY(-2px)}
@@ -237,7 +237,7 @@ body{background:linear-gradient(180deg,#FFF8DD,#FFE9A8);color:#333}
 .option-panel .opt-card.used{visibility:hidden}
 
 /* 마스코트·말풍선 자리 확보 — 모든 화면 콘텐츠는 하단 180px 비워둠 */
-.mic-gate,.setup-wrap,.goals-wrap,.record-wrap,.cert-wrap{padding-bottom:200px !important}
+.mic-gate,.setup-wrap,.goals-wrap,.record-wrap,.cert-wrap{padding-bottom:60px !important}
 
 .mascot-corner{position:absolute;bottom:18px;left:22px;width:130px;z-index:10;pointer-events:none;animation:bob 3s ease-in-out infinite}
 .mascot-corner.right{left:auto;right:22px}
@@ -348,6 +348,7 @@ body, .activity, .activity *, .modal-content, .modal-content *, .intro-card, .in
 </div>
 
 <script>
+const APP_PREFIX = 'app4';
 // ============================================
 // ⚙️ 0. GAS_URL — Apps Script 웹앱 주소 (배포 후 입력)
 // ============================================
@@ -1194,14 +1195,49 @@ function keyCheck(){
   CURRENT_CHECK_FN(+CURRENT_INPUT);
 }
 function updateInputDisplay(){
+  const checkBtn=document.getElementById('check-btn');
+  // 세로셈 두 슬롯 케이스
+  const tensSlot=document.getElementById('ans-tens');
+  const onesSlot=document.getElementById('ans-ones');
+  if(tensSlot && onesSlot){
+    const inp=CURRENT_INPUT;
+    if(CURRENT_ANSWER_DIGITS===2){
+      if(inp.length===0){
+        tensSlot.innerHTML='<span class="cursor-blink"></span>';
+        tensSlot.classList.add('empty','input-active');tensSlot.classList.remove('filled-input');
+        onesSlot.textContent='?';
+        onesSlot.classList.add('empty');onesSlot.classList.remove('input-active','filled-input');
+      }else if(inp.length===1){
+        tensSlot.textContent=inp[0];
+        tensSlot.classList.add('filled-input');tensSlot.classList.remove('empty','input-active');
+        onesSlot.innerHTML='<span class="cursor-blink"></span>';
+        onesSlot.classList.add('empty','input-active');onesSlot.classList.remove('filled-input');
+      }else{
+        tensSlot.textContent=inp[0];
+        tensSlot.classList.add('filled-input');tensSlot.classList.remove('empty','input-active');
+        onesSlot.textContent=inp[1];
+        onesSlot.classList.add('filled-input');onesSlot.classList.remove('empty','input-active');
+      }
+    }else{ // 1자리 답
+      tensSlot.style.visibility='hidden';
+      if(inp.length===0){
+        onesSlot.innerHTML='<span class="cursor-blink"></span>';
+        onesSlot.classList.add('empty','input-active');onesSlot.classList.remove('filled-input');
+      }else{
+        onesSlot.textContent=inp;
+        onesSlot.classList.add('filled-input');onesSlot.classList.remove('empty','input-active');
+      }
+    }
+    if(checkBtn)checkBtn.disabled=(inp.length<CURRENT_ANSWER_DIGITS);
+    return;
+  }
+  // 단일 슬롯 케이스 (기존)
   const slot=document.getElementById('answer-slot');
   if(!slot)return;
-  const checkBtn=document.getElementById('check-btn');
   if(CURRENT_INPUT){
     slot.classList.remove('empty','input-active');
     slot.classList.add('input-active','filled-input');
     slot.textContent=CURRENT_INPUT;
-    // 답 자릿수와 같을 때만 check 활성화
     if(checkBtn)checkBtn.disabled=(CURRENT_INPUT.length<CURRENT_ANSWER_DIGITS);
   }else{
     slot.classList.add('empty','input-active');
@@ -1220,10 +1256,27 @@ function setupKeypadCheck(answer,motionFn){
     if(val===answer){
       KEYPAD_LOCKED=true;
       const slot=document.getElementById('answer-slot');
+      const tensSlot=document.getElementById('ans-tens');
+      const onesSlot=document.getElementById('ans-ones');
       if(slot){
         slot.classList.remove('empty','input-active');
         slot.classList.add('filled','correct-fill');
         slot.textContent=answer;
+      }
+      if(tensSlot && onesSlot){
+        const s=String(answer);
+        if(s.length===2){
+          tensSlot.textContent=s[0];
+          tensSlot.classList.remove('empty','input-active');
+          tensSlot.classList.add('filled','correct-fill');
+          onesSlot.textContent=s[1];
+          onesSlot.classList.remove('empty','input-active');
+          onesSlot.classList.add('filled','correct-fill');
+        }else{
+          onesSlot.textContent=s;
+          onesSlot.classList.remove('empty','input-active');
+          onesSlot.classList.add('filled','correct-fill');
+        }
       }
       sfxCorrect();recordCorrect();
       if(motionFn) await motionFn();
@@ -1231,10 +1284,13 @@ function setupKeypadCheck(answer,motionFn){
     }else{
       sfxWrong();recordWrong();
       const slot=document.getElementById('answer-slot');
+      const tensSlot=document.getElementById('ans-tens');
+      const onesSlot=document.getElementById('ans-ones');
       if(slot){slot.classList.add('shake');setTimeout(()=>slot.classList.remove('shake'),500);}
+      if(tensSlot){tensSlot.classList.add('shake');setTimeout(()=>tensSlot.classList.remove('shake'),500);}
+      if(onesSlot){onesSlot.classList.add('shake');setTimeout(()=>onesSlot.classList.remove('shake'),500);}
       const sp=document.querySelector('.activity .speech');
       if(sp)sp.textContent='아쉬워! 차근차근 다시 세어 봐';
-      // 입력 초기화
       CURRENT_INPUT='';
       setTimeout(()=>updateInputDisplay(),500);
     }
@@ -1944,9 +2000,9 @@ function drawGatherSimple(root,q,inst){
     <div class="activity has-keypad">
       <div class="instruction" id="instr-text">👉 두 수를 <span class="t-op">모아서</span> <span class="t-num">${q.target}</span> 만들기</div>
       <div class="activity-canvas">
-        <div class="objects-box">${objsRow(svgFn,q.a)}</div>
+        <div class="objects-box" style="background:linear-gradient(180deg,#FFF0F0,#FFE0E0);border-color:#FF6B6B">${objsRow(svgFn,q.a)}</div>
         <div style="font-family:var(--font-display);font-size:70px;color:var(--gather-deep)">+</div>
-        <div class="objects-box">${objsRow(svgFn,q.b)}</div>
+        <div class="objects-box" style="background:linear-gradient(180deg,#E8F4FF,#D0E8FF);border-color:#4A90E2;filter:hue-rotate(180deg)">${objsRow(svgFn,q.b)}</div>
         <div style="font-family:var(--font-display);font-size:70px;color:var(--gather-deep)">=</div>
         <div class="num-tile target empty input-active" id="answer-slot"><span class="cursor-blink"></span></div>
       </div>
@@ -1977,24 +2033,43 @@ async function onSimpleChoice(btn,val,answer,motionFn){
 }
 function drawCardSum(root,q){
   const ans=q.a+q.b;
+  const tenBar = `<div style="display:grid;grid-template-columns:repeat(2,7px);grid-template-rows:repeat(5,7px);gap:1px;background:#1565C0;padding:2px;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.2)">${Array(10).fill('<div style="background:#90CAF9;border-radius:1px"></div>').join('')}</div>`;
+  const oneCube = `<div style="width:14px;height:14px;background:radial-gradient(circle at 32% 32%,#fff 6%,#E53935 70%);border:1.5px solid #B71C1C;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.2)"></div>`;
+  const renderMini=(n)=>{
+    const t=Math.floor(n/10), o=n%10;
+    return `<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;max-width:160px;min-height:36px;background:rgba(255,255,255,.7);padding:4px 8px;border-radius:8px">
+      ${t>0?`<div style="display:flex;gap:2px">${Array(t).fill(tenBar).join('')}</div>`:''}
+      ${t>0&&o>0?'<div style="color:#888;font-size:11px">·</div>':''}
+      ${o>0?`<div style="display:grid;grid-template-columns:repeat(5,14px);gap:2px;max-width:80px">${Array(o).fill(oneCube).join('')}</div>`:''}
+    </div>`;
+  };
   root.innerHTML=`
     <div class="activity has-keypad">
-      <div class="instruction" id="instr-text">👉 두 수를 <span class="t-op">모아서</span> <span class="t-num">${q.target}</span> 만들기</div>
-      <div class="activity-canvas">
-        <div class="num-tile">${q.a}</div>
-        <div style="font-family:var(--font-display);font-size:70px;color:var(--gather-deep)">＋</div>
-        <div class="num-tile">${q.b}</div>
-        <div style="font-family:var(--font-display);font-size:70px;color:var(--gather-deep)">＝</div>
-        <div class="num-tile target empty input-active" id="answer-slot"><span class="cursor-blink"></span></div>
+      <div class="instruction" id="instr-text">👉 <span class="t-num">${q.a}</span> <span class="t-op">+</span> <span class="t-num">${q.b}</span> <span class="t-op">=</span> <span class="t-rel">?</span></div>
+      <div style="display:flex;align-items:flex-start;gap:14px;justify-content:center;margin:8px 0">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div class="num-tile">${q.a}</div>
+          ${renderMini(q.a)}
+        </div>
+        <div style="font-family:var(--font-display);font-size:50px;color:var(--gather-deep);margin-top:14px">＋</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div class="num-tile">${q.b}</div>
+          ${renderMini(q.b)}
+        </div>
+        <div style="font-family:var(--font-display);font-size:50px;color:var(--gather-deep);margin-top:14px">＝</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div class="num-tile target empty input-active" id="answer-slot"><span class="cursor-blink"></span></div>
+          <div style="min-height:40px"></div>
+        </div>
       </div>
       <div class="tutorial-hint">👇 키패드로 답을 눌러요</div>
       <div class="mascot-corner">${svgMoEum(110)}</div>
-      <div class="speech">${q.target>=20?'일은 일끼리, 십은 십끼리!':'10이 되는 두 수야!'}</div>
+      <div class="speech">두 수를 모아 봐!</div>
     </div>
     ${renderKeypad()}
   `;
-  speakWithHighlight(`두 수를 모아서 ${q.target} 만들기`,document.getElementById('instr-text'));
-  setupKeypadCheck(ans,()=>q.target===10?motionFillTenFrame(root,q.a,q.b):motionMergeCards(root,ans));
+  speakWithHighlight('두 수를 모아요',document.getElementById('instr-text'));
+  setupKeypadCheck(ans,()=>motionMergeCards(root,ans));
 }
 
 // 분지 트리 — 여러 가지 모으기/가르기
@@ -3135,8 +3210,33 @@ function drawSplitEqual(root,q){
 
 function drawSplitCard(root,q){
   const total=q.target,a=q.a,ans=total-a;
-  const showVis=a<=10&&ans<=10;
-  const visBlock=showVis?`<div style="display:flex;align-items:center;gap:18px;padding:12px 20px;background:rgba(255,255,255,.75);border:3px dashed var(--split-deep);border-radius:18px;margin:6px 0 4px;flex-wrap:wrap;justify-content:center;max-width:560px"><div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;max-width:230px">${Array.from({length:a},(_,i)=>`<div style="width:26px;height:26px;background:radial-gradient(circle at 35% 35%,#fff 6%,var(--split-accent) 60%);border:2px solid var(--split-deep);border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,.2)"></div>`).join('')}</div><div style="font-family:var(--font-display);font-size:18px;color:var(--split-deep)">${a}개</div></div><div style="font-family:var(--font-display);font-size:28px;color:#888">|</div><div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;max-width:230px">${Array.from({length:ans},()=>`<div style="width:26px;height:26px;background:#FFFDF0;border:2px dashed var(--split-deep);border-radius:50%"></div>`).join('')}</div><div style="font-family:var(--font-display);font-size:18px;color:#888">? 개</div></div></div>`:'';
+  // 모형 시각화 — total이 30 이하일 때
+  const showVis = total<=30;
+  let visBlock='';
+  if(showVis){
+    const tenBar = `<div style="display:grid;grid-template-columns:repeat(2,8px);grid-template-rows:repeat(5,8px);gap:1px;background:var(--split-deep);padding:2px;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.2)"><div style="grid-column:1/3;height:0"></div>${Array(10).fill('<div style="background:#FFB1D2;border-radius:1px"></div>').join('')}</div>`;
+    const oneCube = (color)=>`<div style="width:18px;height:18px;background:radial-gradient(circle at 35% 35%,#fff 6%,${color} 60%);border:2px solid var(--split-deep);border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.2)"></div>`;
+    const dashedCube = `<div style="width:18px;height:18px;background:#FFFDF0;border:2px dashed var(--split-deep);border-radius:50%"></div>`;
+    const renderObjs=(n,dashed=false)=>{
+      if(n===0)return '';
+      const t=Math.floor(n/10), o=n%10;
+      return `<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;max-width:240px">
+        ${t>0?`<div style="display:flex;gap:3px">${Array(t).fill(tenBar).join('')}</div>`:''}
+        ${o>0?`<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:160px">${Array.from({length:o},()=>dashed?dashedCube:oneCube('var(--split-accent)')).join('')}</div>`:''}
+      </div>`;
+    };
+    visBlock=`<div style="display:flex;align-items:center;gap:18px;padding:14px 22px;background:rgba(255,255,255,.85);border:3px dashed var(--split-deep);border-radius:18px;margin:6px 0 4px;flex-wrap:wrap;justify-content:center;max-width:600px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        ${renderObjs(a)}
+        <div style="font-family:var(--font-display);font-size:18px;color:var(--split-deep)">${a}개</div>
+      </div>
+      <div style="font-family:var(--font-display);font-size:28px;color:#888">|</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        ${renderObjs(ans,true)}
+        <div style="font-family:var(--font-display);font-size:18px;color:#888">? 개</div>
+      </div>
+    </div>`;
+  }
   root.innerHTML=`
     <div class="activity has-keypad">
       <div class="instruction" id="instr-text">👉 <span class="t-num">${total}</span> <span class="t-op">=</span> <span class="t-num">${a}</span> <span class="t-op">+</span> <span class="t-rel">?</span></div>
@@ -3150,12 +3250,12 @@ function drawSplitCard(root,q){
       </div>
       <div class="tutorial-hint">👇 빈칸의 수를 입력해요</div>
       <div class="mascot-corner">${svgNaNum(110)}</div>
-      <div class="speech">${total>=20?`${total}에서 ${a}${josaReul(a)} 빼 봐!`:`${a} 더하기 얼마?`}</div>
+      <div class="speech">${a} 더하기 얼마면 ${total}?</div>
     </div>
     ${renderKeypad()}
   `;
   speakWithHighlight(`${total}은 ${a}과 무엇`,document.getElementById('instr-text'));
-  setupKeypadCheck(ans,()=>total===10?motionBananaJump(root,a,ans,total):motionSplitCard(root,total,a,ans));
+  setupKeypadCheck(ans,()=>motionSplitCard(root,total,a,ans));
 }
 
 // ============================================
