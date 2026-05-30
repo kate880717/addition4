@@ -328,6 +328,17 @@ body, .activity, .activity *, .modal-content, .modal-content *, .intro-card, .in
 /* 인스트럭션 박스 padding 여유 — 길어도 잘리지 않게 */
 .instruction { line-height: 1.5; word-break: keep-all; overflow-wrap: break-word; padding: 12px 24px; }
 
+
+/* 임명장 등 wrap 영역 — viewport 초과 시 자동 스크롤 안전망 */
+.cert-wrap{max-height:calc(100vh - 60px);overflow-y:auto;overflow-x:hidden}
+/* 임명장 콘텐츠 컴팩트화 */
+.cert-wrap{padding-top:12px !important;padding-bottom:40px !important}
+.cert-wrap h2,.cert-wrap h3{margin:6px 0 !important}
+.cert-wrap .stat-card,.cert-wrap .inquiry-box{padding:8px 12px !important}
+.cert-wrap .collection-card{padding:8px 12px !important}
+.cert-wrap .cert-buttons{margin-top:12px !important;gap:10px !important;flex-wrap:wrap;justify-content:center}
+.cert-wrap .cert-buttons button{padding:12px 22px !important;font-size:17px !important}
+
 </style>
 </head>
 <body>
@@ -392,7 +403,7 @@ const FALLBACK_QUESTIONS = [
   {stage:'split-many',kind:'',a:0,b:0,target:16,meta:''},
   // [9] 식 고르기
   {stage:'choose-equation',kind:'',a:0,b:0,target:17,meta:''},
-  // [10] 🚀 빠른 연산
+  // [10] 🎯 차근차근 도전
   {stage:'speed-round',kind:'',a:0,b:0,target:1,meta:''},
 ];
 
@@ -689,15 +700,15 @@ function finishSetup(){
 }
 
 function prepareActivityQueue(){
-  // 데이터에 정의된 학습 순서 그대로 — find-pair → 핵심 활동 → 분지/선잇기 → 빠른 연산
-  // chosenCount보다 적게 풀려면 *앞에서부터* 자르되 마지막 빠른 연산은 보장
+  // 데이터에 정의된 학습 순서 그대로 — find-pair → 핵심 활동 → 분지/선잇기 → 차근차근 도전
+  // chosenCount보다 적게 풀려면 *앞에서부터* 자르되 마지막 차근차근 도전은 보장
   const all = APP_STATE.questions;
   const total = all.length;
   const want = APP_STATE.chosenCount || total;
   if (want >= total) {
     APP_STATE.activityQueue = all.slice();
   } else {
-    // 빠른 연산은 마지막에 보장
+    // 차근차근 도전은 마지막에 보장
     const speedIdx = all.findIndex(q => q.stage === 'speed-round');
     if (speedIdx >= 0 && want >= 2) {
       // [앞에서부터 want-1개] + [speed-round]
@@ -1038,7 +1049,7 @@ const STAGE_CATEGORY={
   'gather-find-pair':'짝꿍','split-find-pair':'짝꿍',
   'gather-many':'분지','split-many':'분지',
   'connect-pairs':'선잇기','choose-equation':'식고르기',
-  'speed-round':'빠른연산'
+  'speed-round':'차근차근'
 };
 const CATEGORY_INFO={
   '모으기':{icon:'🛒',label:'모으기'},
@@ -1049,7 +1060,7 @@ const CATEGORY_INFO={
   '분지':{icon:'🌳',label:'분지나무'},
   '선잇기':{icon:'🔗',label:'선잇기'},
   '식고르기':{icon:'✅',label:'식고르기'},
-  '빠른연산':{icon:'🚀',label:'빠른연산'}
+  '차근차근':{icon:'🎯',label:'차근차근'}
 };
 
 function markCollected(stage){
@@ -1134,6 +1145,7 @@ function getEncouragement(){
 
 // 구체물 SVG
 const OBJECT_SVG={
+  ball:(c='#E84545')=>`<svg width="42" height="42" viewBox="0 0 44 44"><circle cx="22" cy="23" r="18" fill="${c}"/><ellipse cx="15" cy="15" rx="6" ry="4" fill="rgba(255,255,255,.5)"/><circle cx="22" cy="23" r="18" fill="none" stroke="rgba(0,0,0,.12)" stroke-width="1.5"/></svg>`,
   truck:(c='#E84545')=>`<svg width="60" height="44" viewBox="0 0 64 48"><rect x="2" y="14" width="38" height="22" rx="3" fill="${c}"/><rect x="40" y="22" width="20" height="14" rx="3" fill="#3990D8"/><rect x="44" y="26" width="12" height="7" fill="#B5E0FF"/><circle cx="14" cy="40" r="6" fill="#222"/><circle cx="48" cy="40" r="6" fill="#222"/></svg>`,
   apple:()=>`<svg width="40" height="44" viewBox="0 0 44 48"><path d="M22 8 Q26 4 30 6" stroke="#5A2E0E" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="28" cy="9" rx="5" ry="3" fill="#5BB836" transform="rotate(30 28 9)"/><ellipse cx="22" cy="28" rx="17" ry="18" fill="#E84545"/></svg>`,
   flower:(c='#FFD93C')=>`<svg width="38" height="44" viewBox="0 0 42 48"><rect x="20" y="20" width="2" height="22" fill="#2F7A12"/><circle cx="21" cy="14" r="7" fill="${c}"/><circle cx="11" cy="20" r="7" fill="${c}"/><circle cx="31" cy="20" r="7" fill="${c}"/><circle cx="16" cy="8" r="7" fill="${c}"/><circle cx="26" cy="8" r="7" fill="${c}"/><circle cx="21" cy="16" r="4.5" fill="#fff"/></svg>`,
@@ -1306,7 +1318,7 @@ function createBurst(x,y,size=200){
 }
 
 // 별 SVG — 카드 활동·분지 트리 카운팅용
-const STAR_SVG=()=>`<svg width="40" height="40" viewBox="0 0 40 40"><polygon points="20,3 25,15 38,15 27,23 31,36 20,28 9,36 13,23 2,15 15,15" fill="#FFD93C" stroke="#E8B100" stroke-width="2"/></svg>`;
+const STAR_SVG=(c,s)=>{if(typeof c!=='string'||!c.startsWith('#')){c='#FFD93C';s='#E8B100';}return `<svg width="40" height="40" viewBox="0 0 40 40"><polygon points="20,3 25,15 38,15 27,23 31,36 20,28 9,36 13,23 2,15 15,15" fill="${c}" stroke="${s}" stroke-width="2"/></svg>`;};
 const HEART_SVG=()=>`<svg width="40" height="36" viewBox="0 0 40 36"><path d="M20 33 C 20 33, 4 22, 4 12 C 4 6, 9 3, 13 3 C 17 3, 20 7, 20 7 C 20 7, 23 3, 27 3 C 31 3, 36 6, 36 12 C 36 22, 20 33, 20 33 Z" fill="#FF6FA8" stroke="#C73874" stroke-width="2"/></svg>`;
 
 // 한국어 숫자 (말로 읽을 때)
@@ -1625,73 +1637,76 @@ async function motionMergeObjects(root,svgFn,finalCount){
 // ============================================
 // 🏺 모션: 항아리에 구슬 떨어뜨리기 (10 만들기 전용)
 // ============================================
-async function motionFillJar(root,count,colors=['#E84545','#3A8DDE','#FFD93C','#5BB836']){
+async function motionFillJar(root,aCount,bCount){
+  // 항아리 대신 10판(5x2) 채우기 모션 — 속이 보이고 두 수 색 구분 명확
+  const total=aCount+bCount;
   const arena=document.createElement('div');
   arena.className='count-popup';
-  arena.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.25);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:200;width:400px;height:440px;pointer-events:none';
+  arena.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.25);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:200;background:#fff;padding:28px 36px;border-radius:24px;box-shadow:0 12px 40px rgba(0,0,0,.4);border:4px solid #1565C0';
+  let cells='';
+  for(let i=0;i<10;i++){
+    cells+=`<div class="tf-cell-${i}" style="width:54px;height:54px;background:#F5F5F5;border:3px solid #1565C0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;color:rgba(255,255,255,.6);font-weight:bold;transition:all .25s"></div>`;
+  }
   arena.innerHTML=`
-    <div id="jar-balls-area" style="position:absolute;top:0;left:0;right:0;height:130px"></div>
-    <svg viewBox="0 0 300 340" width="320" style="position:absolute;left:50%;bottom:30px;transform:translateX(-50%);filter:drop-shadow(0 8px 18px rgba(0,0,0,.3))">
-      <defs>
-        <radialGradient id="jarbig-body" cx="35%" cy="28%" r="75%">
-          <stop offset="0%" stop-color="#FFFFFF"/>
-          <stop offset="25%" stop-color="#BDF0EB"/>
-          <stop offset="65%" stop-color="#5BBFB3"/>
-          <stop offset="100%" stop-color="#2A8077"/>
-        </radialGradient>
-      </defs>
-      <ellipse cx="150" cy="320" rx="110" ry="9" fill="rgba(0,0,0,.18)"/>
-      <path d="M95 90 Q50 105 45 175 Q40 270 150 285 Q260 270 255 175 Q250 105 205 90 Z" fill="url(#jarbig-body)" stroke="#1F635A" stroke-width="4" stroke-linejoin="round"/>
-      <path d="M65 145 Q70 130 100 128" fill="none" stroke="#FFFFFF" stroke-width="3" opacity=".4" stroke-linecap="round"/>
-      <ellipse cx="150" cy="92" rx="60" ry="13" fill="#1F635A"/>
-      <ellipse cx="150" cy="89" rx="53" ry="9" fill="#0F3D38"/>
-      <text id="jar-count" x="150" y="220" text-anchor="middle" font-family="Jua,sans-serif" font-size="92" fill="#FFE066" stroke="#0F3D38" stroke-width="3" paint-order="stroke" opacity="0">0</text>
-    </svg>
+    <div style="text-align:center;font-family:var(--font-display);font-size:22px;color:#1565C0;margin-bottom:14px">🟦 10판이 채워지면 <span style="color:#E84545">10</span>!</div>
+    <div style="display:grid;grid-template-columns:repeat(5,54px);gap:6px;justify-content:center">${cells}</div>
+    <div id="tf-count" style="text-align:center;font-family:var(--font-display);font-size:80px;color:#1565C0;margin-top:10px;opacity:0;transition:transform .25s">0</div>
   `;
   root.appendChild(arena);
   await sleep(60);
   arena.style.opacity='1';
   arena.style.transform='translate(-50%,-50%) scale(1)';
   await sleep(450);
-  const ballsArea=arena.querySelector('#jar-balls-area');
-  const counter=arena.querySelector('#jar-count');
-  counter.style.transition='opacity .3s, transform .25s';
+  const counter=arena.querySelector('#tf-count');
   counter.style.opacity='1';
-  for(let i=0;i<count;i++){
-    const ball=document.createElement('div');
-    const c=colors[i%colors.length];
-    const xOff=(Math.random()-0.5)*40;
-    ball.style.cssText=`position:absolute;left:50%;top:0;width:34px;height:34px;margin-left:${-17+xOff}px;border-radius:50%;background:radial-gradient(circle at 32% 32%,#fff 6%,${c} 65%);box-shadow:0 4px 10px rgba(0,0,0,.35),inset -3px -3px 6px rgba(0,0,0,.2);transition:top .38s cubic-bezier(.5,.1,.95,.55),opacity .15s,transform .15s;z-index:5`;
-    ballsArea.appendChild(ball);
-    await sleep(40);
-    ball.style.top='105px';
-    await sleep(300);
+  // 빨강 a개
+  for(let i=0;i<aCount;i++){
+    const cell=arena.querySelector('.tf-cell-'+i);
+    if(cell){
+      cell.style.background='radial-gradient(circle at 32% 32%,#fff 6%,#E84545 70%)';
+      cell.style.borderColor='#B71C1C';
+      cell.innerHTML='●';
+    }
     counter.textContent=i+1;
     counter.style.transform='scale(1.3)';
-    playTone(440+i*45,0.12,'sine',0.28);
-    if(APP_STATE.speakerOn)speak(`${i+1}`,{rate:1.2});
-    await sleep(120);
+    if(typeof playTone==='function')playTone(440+i*45,0.12,'sine',0.28);
+    await sleep(260);
     counter.style.transform='scale(1)';
-    ball.style.opacity='0';
-    ball.style.transform='scale(.4)';
-    setTimeout(()=>ball.remove(),200);
-    await sleep(150);
   }
-  await sleep(400);
-  // 빅 넘버 뜨기 (항아리 아래에 풍선처럼)
-  const big=document.createElement('div');
-  big.style.cssText='position:absolute;left:50%;bottom:-10px;transform:translateX(-50%) scale(.3);opacity:0;font-family:var(--font-display);font-size:54px;color:#fff;background:linear-gradient(180deg,#5BBFB3,#1F635A);padding:8px 32px;border-radius:999px;border:5px solid #fff;box-shadow:0 8px 20px rgba(0,0,0,.35);transition:all .55s cubic-bezier(.34,1.56,.64,1);white-space:nowrap';
-  big.innerHTML=`모두 <span style="color:#FFE066;font-size:64px">${count}</span>개!`;
-  arena.appendChild(big);
-  await sleep(50);
-  big.style.opacity='1';
-  big.style.transform='translateX(-50%) scale(1)';
-  if(APP_STATE.speakerOn)speak(`모두 ${count}개`,{rate:.95});
-  await sleep(1300);
+  // 파랑 b개
+  for(let i=0;i<bCount;i++){
+    const idx=aCount+i;
+    const cell=arena.querySelector('.tf-cell-'+idx);
+    if(cell){
+      cell.style.background='radial-gradient(circle at 32% 32%,#fff 6%,#3A8DDE 70%)';
+      cell.style.borderColor='#1565C0';
+      cell.innerHTML='●';
+    }
+    counter.textContent=aCount+i+1;
+    counter.style.transform='scale(1.3)';
+    if(typeof playTone==='function')playTone(440+(aCount+i)*45,0.12,'sine',0.28);
+    await sleep(260);
+    counter.style.transform='scale(1)';
+  }
+  // 완성 강조
+  counter.style.color='#E84545';
+  counter.style.transform='scale(1.5)';
+  if(APP_STATE.speakerOn && typeof speak==='function')speak(`모두 ${total}`,{rate:.95});
+  await sleep(800);
+  // 답 슬롯 빵
+  const target=document.getElementById('answer-slot');
+  if(target){
+    target.style.transition='transform .5s cubic-bezier(.34,1.56,.64,1)';
+    target.style.transform='scale(1.35)';
+    target.style.boxShadow='0 0 50px rgba(255,230,0,.9)';
+    await sleep(500);
+    target.style.transform='scale(1)';target.style.boxShadow='';
+  }
   arena.style.opacity='0';
-  arena.style.transform='translate(-50%,-50%) scale(.3)';
-  await sleep(450);
+  arena.style.transform='translate(-50%,-50%) scale(.25)';
+  await sleep(400);
   arena.remove();
+  if(typeof launchConfetti==='function')launchConfetti(20);
 }
 
 // ============================================
@@ -1912,7 +1927,9 @@ async function motionSplitObjects(root,svgFn,halfCount){
 // ============================================
 // ✨ 모션: 수 카드 두 개가 가운데로 합쳐짐 + 별 카운팅
 // ============================================
-async function motionMergeCards(root,finalCount){
+async function motionMergeCards(root,aCount,bCount){
+  const finalCount = (bCount===undefined) ? aCount : (aCount+bCount);
+  const aN = (bCount===undefined) ? finalCount : aCount;
   const tiles=[...root.querySelectorAll('.activity-canvas > .num-tile')].filter(t=>!t.classList.contains('target')&&!t.classList.contains('empty'));
   const target=document.getElementById('answer-slot');
   if(tiles.length<2||!target)return;
@@ -1927,8 +1944,12 @@ async function motionMergeCards(root,finalCount){
   });
   setTimeout(()=>{target.style.boxShadow='0 0 40px rgba(255,230,0,0.8)';},600);
   await sleep(950);
-  // 🆕 별 객체로 카운팅
-  if(finalCount) await showCountPopup(STAR_SVG,finalCount,{title:'함께 세어 봐요'});
+  // 🆕 별 객체로 카운팅 — a개 빨강 + b개 파랑
+  if(finalCount){
+    const colorStar = (i)=> i<aN ? STAR_SVG('#E84545','#B71C1C') : STAR_SVG('#3A8DDE','#1565C0');
+    const title = (bCount!==undefined) ? `빨강 ${aN}개 + 파랑 ${bCount}개를 세어 봐요` : '함께 세어 봐요';
+    await showCountPopup(colorStar,finalCount,{title});
+  }
   target.style.boxShadow='';
 }
 
@@ -1984,8 +2005,9 @@ async function flyCardToSlot(card,slot,val){
 // 분지 트리 완료 시 별 카운팅 (모으기 / 가르기 모두)
 async function showBranchCount(target,leftVal,rightVal,isGather){
   if(isGather){
-    // leftVal + rightVal = target — 합쳐서 카운트
-    await showCountPopup(STAR_SVG,target,{title:`${leftVal}과 ${rightVal}을 모으면?`});
+    // leftVal + rightVal = target — 빨강 leftVal + 파랑 rightVal 색 분리
+    const colorStar = (i)=> i<leftVal ? STAR_SVG('#E84545','#B71C1C') : STAR_SVG('#3A8DDE','#1565C0');
+    await showCountPopup(colorStar,target,{title:`빨강 ${leftVal} + 파랑 ${rightVal}을 모으면?`});
   }else{
     // target → leftVal + rightVal — 갈라서 카운트
     await showSplitCountPopup(HEART_SVG,leftVal,rightVal,target);
@@ -2000,9 +2022,9 @@ function drawGatherSimple(root,q,inst){
     <div class="activity has-keypad">
       <div class="instruction" id="instr-text">👉 두 수를 <span class="t-op">모아서</span> <span class="t-num">${q.target}</span> 만들기</div>
       <div class="activity-canvas">
-        <div class="objects-box" style="background:linear-gradient(180deg,#FFF0F0,#FFE0E0);border-color:#FF6B6B">${objsRow(svgFn,q.a)}</div>
+        <div class="objects-box" style="background:linear-gradient(180deg,#FFF0F0,#FFE0E0);border-color:#FF6B6B">${objsRow(OBJECT_SVG.ball,q.a,'#E84545')}</div>
         <div style="font-family:var(--font-display);font-size:70px;color:var(--gather-deep)">+</div>
-        <div class="objects-box" style="background:linear-gradient(180deg,#E8F4FF,#D0E8FF);border-color:#4A90E2;filter:hue-rotate(180deg)">${objsRow(svgFn,q.b)}</div>
+        <div class="objects-box" style="background:linear-gradient(180deg,#E8F4FF,#D6ECFF);border-color:#4A90E2">${objsRow(OBJECT_SVG.ball,q.b,'#3A8DDE')}</div>
         <div style="font-family:var(--font-display);font-size:70px;color:var(--gather-deep)">=</div>
         <div class="num-tile target empty input-active" id="answer-slot"><span class="cursor-blink"></span></div>
       </div>
@@ -2014,7 +2036,7 @@ function drawGatherSimple(root,q,inst){
   `;
   speakWithHighlight(`모아서 ${q.target} 만들기`,document.getElementById('instr-text'));
   const isJar=q.target===10 && (q.kind||'').startsWith('bead-');
-  setupKeypadCheck(ans,()=>isJar?motionFillJar(root,ans):motionMergeObjects(root,svgFn,ans));
+  setupKeypadCheck(ans,()=>isJar?motionFillJar(root,q.a,q.b):motionMergeObjects(root,svgFn,ans));
 }
 async function onSimpleChoice(btn,val,answer,motionFn){
   if(val===answer){
@@ -2034,13 +2056,13 @@ async function onSimpleChoice(btn,val,answer,motionFn){
 function drawCardSum(root,q){
   const ans=q.a+q.b;
   const tenBar = `<div style="display:grid;grid-template-columns:repeat(2,7px);grid-template-rows:repeat(5,7px);gap:1px;background:#1565C0;padding:2px;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.2)">${Array(10).fill('<div style="background:#90CAF9;border-radius:1px"></div>').join('')}</div>`;
-  const oneCube = `<div style="width:14px;height:14px;background:radial-gradient(circle at 32% 32%,#fff 6%,#E53935 70%);border:1.5px solid #B71C1C;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.2)"></div>`;
-  const renderMini=(n)=>{
+  const oneCube = (col,bcol)=>`<div style="width:14px;height:14px;background:radial-gradient(circle at 32% 32%,#fff 6%,${col} 70%);border:1.5px solid ${bcol};border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.2)"></div>`;
+  const renderMini=(n,col='#E53935',bcol='#B71C1C')=>{
     const t=Math.floor(n/10), o=n%10;
     return `<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;max-width:160px;min-height:36px;background:rgba(255,255,255,.7);padding:4px 8px;border-radius:8px">
       ${t>0?`<div style="display:flex;gap:2px">${Array(t).fill(tenBar).join('')}</div>`:''}
       ${t>0&&o>0?'<div style="color:#888;font-size:11px">·</div>':''}
-      ${o>0?`<div style="display:grid;grid-template-columns:repeat(5,14px);gap:2px;max-width:80px">${Array(o).fill(oneCube).join('')}</div>`:''}
+      ${o>0?`<div style="display:grid;grid-template-columns:repeat(5,14px);gap:2px;max-width:80px">${Array(o).fill(oneCube(col,bcol)).join('')}</div>`:''}
     </div>`;
   };
   root.innerHTML=`
@@ -2049,12 +2071,12 @@ function drawCardSum(root,q){
       <div style="display:flex;align-items:flex-start;gap:14px;justify-content:center;margin:8px 0">
         <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
           <div class="num-tile">${q.a}</div>
-          ${renderMini(q.a)}
+          ${renderMini(q.a,'#E53935','#B71C1C')}
         </div>
         <div style="font-family:var(--font-display);font-size:50px;color:var(--gather-deep);margin-top:14px">＋</div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
           <div class="num-tile">${q.b}</div>
-          ${renderMini(q.b)}
+          ${renderMini(q.b,'#3A8DDE','#1565C0')}
         </div>
         <div style="font-family:var(--font-display);font-size:50px;color:var(--gather-deep);margin-top:14px">＝</div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
@@ -2069,7 +2091,7 @@ function drawCardSum(root,q){
     ${renderKeypad()}
   `;
   speakWithHighlight('두 수를 모아요',document.getElementById('instr-text'));
-  setupKeypadCheck(ans,()=>motionMergeCards(root,ans));
+  setupKeypadCheck(ans,()=>motionMergeCards(root,q.a,q.b));
 }
 
 // 분지 트리 — 여러 가지 모으기/가르기
@@ -2378,10 +2400,12 @@ function drawTenFrameCarry(root,q){
   // 10판 + 추가 일 모형 시각화 (a, a+1, ..., a+b 단계로 표시)
   const cells = [];
   for(let i=0;i<10;i++){
-    const filled = i<Math.min(a, 10);
+    const isA = i<a;                              // 첫 수 (빨강)
+    const isB = i>=a && i<Math.min(a+b,10);       // 둘째 수에서 채운 부분 (파랑)
+    const filled = isA||isB;
     cells.push(`<div class="tfc-cell" data-i="${i}" style="width:48px;height:48px;border:3px solid var(--gather-deep);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.1)">${filled?`<div style="width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 32% 32%,#fff 6%,var(--gather-accent) 70%);box-shadow:0 2px 4px rgba(0,0,0,.2)"></div>`:''}</div>`);
   }
-  const extras = (a+b>10) ? Array.from({length:total-10},(_,i)=>`<div class="tfc-extra" data-i="${i}" style="width:48px;height:48px;border:3px dashed var(--gather-deep);border-radius:10px;background:#FFFDF0;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 32% 32%,#fff 6%,#FFD93C 70%);border:2px solid var(--gather-deep);box-shadow:0 2px 4px rgba(0,0,0,.2)"></div></div>`).join('') : '';
+  const extras = (a+b>10) ? Array.from({length:total-10},(_,i)=>`<div class="tfc-extra" data-i="${i}" style="width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center"><div style="width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 32% 32%,#fff 6%,#3A8DDE 70%);border:2.5px solid #1565C0;box-shadow:0 2px 4px rgba(0,0,0,.2)"></div></div>`).join('') : '';
   root.innerHTML=`
     <div class="activity has-keypad" style="background:${headerBg}">
       <div class="instruction" id="instr-text">👉 <span class="t-num">${a}</span> <span class="t-op">+</span> <span class="t-num">${b}</span> — <span class="t-op">받아올림</span>!</div>
@@ -2522,12 +2546,12 @@ function drawVerticalAdd(root,q){
   const carry=oneSum>=10?1:0;
   // 수 모형 — 각자 표시
   const tenBar = `<div style="display:grid;grid-template-columns:repeat(2,9px);grid-template-rows:repeat(5,9px);gap:1px;background:#1565C0;padding:2px;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.2)">${Array(10).fill('<div style="background:#90CAF9;border-radius:1px"></div>').join('')}</div>`;
-  const oneCube = `<div style="width:18px;height:18px;background:radial-gradient(circle at 32% 32%,#fff 6%,#E53935 70%);border:1.5px solid #B71C1C;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.25)"></div>`;
-  function modelHtml(t, o){
+  const oneCube = (c='#E53935',bc='#B71C1C')=>`<div style="width:18px;height:18px;background:radial-gradient(circle at 32% 32%,#fff 6%,${c} 70%);border:1.5px solid ${bc};border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.25)"></div>`;
+  function modelHtml(t, o, c, bc){
     return `<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.9);padding:8px 12px;border-radius:12px;flex-wrap:wrap;justify-content:center;min-width:140px">
       <div style="display:flex;gap:3px">${Array(t).fill(tenBar).join('')}</div>
       ${t>0&&o>0?'<div style="color:#666;font-family:var(--font-display);font-size:14px">·</div>':''}
-      <div style="display:grid;grid-template-columns:repeat(5,18px);gap:3px;max-width:100px">${Array(o).fill(oneCube).join('')}</div>
+      <div style="display:grid;grid-template-columns:repeat(5,18px);gap:3px;max-width:100px">${Array(o).fill(oneCube(c,bc)).join('')}</div>
     </div>`;
   }
   root.innerHTML=`
@@ -2537,12 +2561,12 @@ function drawVerticalAdd(root,q){
       <div id="model-area" style="display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:8px;padding:10px;background:rgba(0,0,0,.15);border-radius:14px">
         <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
           <div style="font-family:var(--font-display);font-size:18px;color:#FFE066">${a}</div>
-          ${modelHtml(aT, aO)}
+          ${modelHtml(aT, aO, '#E53935', '#B71C1C')}
         </div>
         <div style="font-family:var(--font-display);font-size:32px;color:#FFE066">＋</div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
           <div style="font-family:var(--font-display);font-size:18px;color:#FFE066">${b}</div>
-          ${modelHtml(bT, bO)}
+          ${modelHtml(bT, bO, '#3A8DDE', '#1565C0')}
         </div>
         <div style="font-family:var(--font-display);font-size:32px;color:#FFE066">＝</div>
         <div id="model-sum" style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:140px">
@@ -2642,12 +2666,13 @@ function drawVerticalSub(root,q){
   const bT=Math.floor(b/10), bO=b%10;
   const borrow=tO<bO?1:0;
   const tenBar = `<div style="display:grid;grid-template-columns:repeat(2,9px);grid-template-rows:repeat(5,9px);gap:1px;background:#1565C0;padding:2px;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.2)">${Array(10).fill('<div style="background:#90CAF9;border-radius:1px"></div>').join('')}</div>`;
-  const oneCube = `<div style="width:18px;height:18px;background:radial-gradient(circle at 32% 32%,#fff 6%,#E53935 70%);border:1.5px solid #B71C1C;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.25)"></div>`;
-  function modelHtml(t, o, mark){
+  const oneCube = (c='#E53935',bc='#B71C1C')=>`<div style="width:18px;height:18px;background:radial-gradient(circle at 32% 32%,#fff 6%,${c} 70%);border:1.5px solid ${bc};border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.25)"></div>`;
+  function modelHtml(t, o, mark, c, bc){
+    c=c||'#E53935'; bc=bc||'#B71C1C';
     return `<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,${mark?'.4':.9});padding:8px 12px;border-radius:12px;flex-wrap:wrap;justify-content:center;min-width:140px;${mark?'border:2px dashed #FF9DCC':''}">
       <div style="display:flex;gap:3px">${Array(t).fill(tenBar).join('')}</div>
       ${t>0&&o>0?'<div style="color:#666;font-family:var(--font-display);font-size:14px">·</div>':''}
-      <div style="display:grid;grid-template-columns:repeat(5,18px);gap:3px">${Array(o).fill(oneCube).join('')}</div>
+      <div style="display:grid;grid-template-columns:repeat(5,18px);gap:3px">${Array(o).fill(oneCube(c,bc)).join('')}</div>
     </div>`;
   }
   root.innerHTML=`
@@ -2656,12 +2681,12 @@ function drawVerticalSub(root,q){
       <div id="model-area" style="display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:8px;padding:10px;background:rgba(0,0,0,.15);border-radius:14px">
         <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
           <div style="font-family:var(--font-display);font-size:18px;color:#FFC4E3">${total}</div>
-          ${modelHtml(tT, tO)}
+          ${modelHtml(tT, tO, false, '#E53935', '#B71C1C')}
         </div>
         <div style="font-family:var(--font-display);font-size:32px;color:#FFC4E3">－</div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
           <div style="font-family:var(--font-display);font-size:18px;color:#FFC4E3">${b} (뺄 것)</div>
-          ${modelHtml(bT, bO, true)}
+          ${modelHtml(bT, bO, true, '#3A8DDE', '#1565C0')}
         </div>
         <div style="font-family:var(--font-display);font-size:32px;color:#FFC4E3">＝</div>
         <div id="model-sum" style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:140px">
@@ -2751,11 +2776,11 @@ async function motionVerticalSub(root,total,b,ans,borrow){
 }
 
 // ============================================
-// 🚀 빠른 연산 (Speed Round) — 시간 제한 없이 5문제 연속
+// 🎯 차근차근 도전 (Speed Round) — 시간 제한 없이 5문제 연속
 // 가벼운 별점 효과, 등급/순위 X
 // ============================================
 // ============================================
-// 🚀 빠른 연산 — 저학년 친화 (시간 제한 X, 정답률 칭호, 오답 다시 풀기)
+// 🎯 차근차근 도전 — 저학년 친화 (천천히 정확하게, 정답률 칭호, 오답 다시 풀기)
 // 곱셈 앱 패턴 참고: 진행 바, 문항 수 선택, 오답 복습, 결과 칭호
 // 1학년 적응: 시간 제한 제거, 보라색 → 노랑·남색, 등급 느낌 없는 응원 칭호
 // ============================================
@@ -2793,7 +2818,7 @@ function drawSpeedRound(root,q){
   root.innerHTML = `
     <div class="activity has-keypad" style="background:linear-gradient(180deg,#1A2438,#0A1024);color:#fff">
       <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;background:rgba(255,255,255,.08);border-radius:14px;margin-bottom:10px">
-        <span style="font-family:var(--font-display);font-size:17px;color:#FFE066;font-weight:bold;white-space:nowrap">🚀 ${st.reviewing?'복습!':'빠른 연산'} ${st.idx+1}/${total}</span>
+        <span style="font-family:var(--font-display);font-size:17px;color:#FFE066;font-weight:bold;white-space:nowrap">🚀 ${st.reviewing?'복습!':'차근차근 도전'} ${st.idx+1}/${total}</span>
         <div style="flex:1;height:10px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden">
           <div style="height:100%;width:${progress}%;background:linear-gradient(90deg,#FFE066,#FFC23C);border-radius:99px;transition:width .5s"></div>
         </div>
@@ -2859,7 +2884,7 @@ function showSpeedSelect(root) {
   root.innerHTML = `
     <div class="activity" style="background:linear-gradient(180deg,#1A2438,#0A1024);color:#fff;align-items:center;justify-content:center;gap:20px;padding:30px">
       <div style="font-family:var(--font-display);font-size:64px;color:#FFE066">🚀</div>
-      <div style="font-family:var(--font-display);font-size:34px;text-align:center;color:#fff">빠른 연산 도전!</div>
+      <div style="font-family:var(--font-display);font-size:34px;text-align:center;color:#fff">차근차근 도전 도전!</div>
       <div style="font-family:var(--font-display);font-size:17px;color:#FFC4C4;text-align:center;max-width:520px;line-height:1.6">
         지금까지 배운 걸 연속으로 풀어 봐요!<br>
         ⏱️ <span style="color:#FFE066">시간 제한은 없어요</span>. 천천히 정확하게 ✨
@@ -2877,7 +2902,7 @@ function showSpeedSelect(root) {
       <div class="speech" style="background:#FFE066;color:#222">준비됐어?</div>
     </div>
   `;
-  if (APP_STATE.speakerOn) speak('빠른 연산 도전. 몇 문제 풀어볼까?', {rate:1.0});
+  if (APP_STATE.speakerOn) speak('차근차근 도전 도전. 몇 문제 풀어볼까?', {rate:1.0});
 }
 
 window.startSpeed = function(count) {
@@ -3186,7 +3211,7 @@ function drawSplitEqual(root,q){
     <div class="activity has-keypad">
       <div class="instruction" id="instr-text">👉 <span class="t-num">${total}</span>${josaReul(total)} <span class="t-rel">똑같이</span> 두 묶음으로</div>
       <div class="activity-canvas" style="flex-direction:column;gap:8px">
-        <div class="objects-box" style="border-color:var(--split-deep);min-width:280px;padding:14px">${objsRow(svgFn,total)}</div>
+        <div class="objects-box" style="border-color:var(--split-deep);min-width:280px;padding:14px">${objsRow(OBJECT_SVG.ball,answer,'#E84545')}${objsRow(OBJECT_SVG.ball,answer,'#3A8DDE')}</div>
         <div style="font-family:var(--font-display);font-size:28px;color:var(--split-deep)">⬇️</div>
         <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;justify-content:center">
           <div class="objects-box" style="border-color:var(--split-deep);min-width:130px;min-height:80px;padding:10px" id="left-plate"></div>
@@ -3200,12 +3225,12 @@ function drawSplitEqual(root,q){
       </div>
       <div class="tutorial-hint">👇 키패드로 한 쪽 개수 입력</div>
       <div class="mascot-corner">${svgNaNum(110)}</div>
-      <div class="speech">반반씩 나누자!</div>
+      <div class="speech">빨강·파랑 반반씩!</div>
     </div>
     ${renderKeypad()}
   `;
   speakWithHighlight(`${total}을 똑같이 나눠요`,document.getElementById('instr-text'));
-  setupKeypadCheck(answer,()=>motionSplitObjects(root,svgFn,answer));
+  setupKeypadCheck(answer,()=>motionSplitObjects(root,OBJECT_SVG.ball,answer));
 }
 
 function drawSplitCard(root,q){
@@ -3216,13 +3241,13 @@ function drawSplitCard(root,q){
   if(showVis){
     const tenBar = `<div style="display:grid;grid-template-columns:repeat(2,8px);grid-template-rows:repeat(5,8px);gap:1px;background:var(--split-deep);padding:2px;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.2)"><div style="grid-column:1/3;height:0"></div>${Array(10).fill('<div style="background:#FFB1D2;border-radius:1px"></div>').join('')}</div>`;
     const oneCube = (color)=>`<div style="width:18px;height:18px;background:radial-gradient(circle at 35% 35%,#fff 6%,${color} 60%);border:2px solid var(--split-deep);border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.2)"></div>`;
-    const dashedCube = `<div style="width:18px;height:18px;background:#FFFDF0;border:2px dashed var(--split-deep);border-radius:50%"></div>`;
+    const dashedCube = `<div style="width:18px;height:18px;background:#EAF4FF;border:2px dashed #3A8DDE;border-radius:50%"></div>`;
     const renderObjs=(n,dashed=false)=>{
       if(n===0)return '';
       const t=Math.floor(n/10), o=n%10;
       return `<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;max-width:240px">
         ${t>0?`<div style="display:flex;gap:3px">${Array(t).fill(tenBar).join('')}</div>`:''}
-        ${o>0?`<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:160px">${Array.from({length:o},()=>dashed?dashedCube:oneCube('var(--split-accent)')).join('')}</div>`:''}
+        ${o>0?`<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:160px">${Array.from({length:o},()=>dashed?dashedCube:oneCube('#E84545')).join('')}</div>`:''}
       </div>`;
     };
     visBlock=`<div style="display:flex;align-items:center;gap:18px;padding:14px 22px;background:rgba(255,255,255,.85);border:3px dashed var(--split-deep);border-radius:18px;margin:6px 0 4px;flex-wrap:wrap;justify-content:center;max-width:600px">
