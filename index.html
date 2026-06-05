@@ -701,21 +701,24 @@ function finishSetup(){
 
 function prepareActivityQueue(){
   // 데이터에 정의된 학습 순서 그대로 — find-pair → 핵심 활동 → 분지/선잇기 → 차근차근 도전
-  // chosenCount보다 적게 풀려면 *앞에서부터* 자르되 마지막 차근차근 도전은 보장
+  // 차근차근 도전(speed-round)은 마지막에 *반드시* 보장. 데이터에 없어도 자동 생성.
   const all = APP_STATE.questions;
-  const total = all.length;
-  const want = APP_STATE.chosenCount || total;
-  if (want >= total) {
-    APP_STATE.activityQueue = all.slice();
+  const want = APP_STATE.chosenCount || all.length;
+  // speed-round 추출 또는 자동 생성
+  const speedIdx = all.findIndex(q => q.stage === 'speed-round');
+  const speedQ = (speedIdx >= 0)
+    ? all[speedIdx]
+    : { id:'SPEED', stage:'speed-round', a:0, b:0, target:0, meta:'', kind:'' };
+  // speed-round 제외한 나머지 활동
+  const others = all.filter(q => q.stage !== 'speed-round');
+  if (want >= others.length + 1) {
+    // 전체 — 모든 활동 + 마지막 speed
+    APP_STATE.activityQueue = others.concat([speedQ]);
+  } else if (want >= 2) {
+    // 일부 — 앞에서 want-1개 + speed
+    APP_STATE.activityQueue = others.slice(0, want-1).concat([speedQ]);
   } else {
-    // 차근차근 도전은 마지막에 보장
-    const speedIdx = all.findIndex(q => q.stage === 'speed-round');
-    if (speedIdx >= 0 && want >= 2) {
-      // [앞에서부터 want-1개] + [speed-round]
-      APP_STATE.activityQueue = all.slice(0, want-1).concat([all[speedIdx]]);
-    } else {
-      APP_STATE.activityQueue = all.slice(0, want);
-    }
+    APP_STATE.activityQueue = [speedQ];
   }
   APP_STATE.activityIdx = 0;
 }
